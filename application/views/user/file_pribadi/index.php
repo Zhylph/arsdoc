@@ -57,6 +57,15 @@
             <button type="button" data-modal-target="folderModal" data-modal-toggle="folderModal" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
                 <i class="fas fa-folder-plus mr-2"></i>Buat Folder
             </button>
+            <a href="<?php echo site_url('user/file_pribadi/debug_buat_folder'); ?>" target="_blank" class="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-red-600 dark:hover:bg-red-700 focus:outline-none dark:focus:ring-red-800">
+                <i class="fas fa-bug mr-2"></i>Debug
+            </a>
+            <button type="button" onclick="testAjax()" class="text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-purple-600 dark:hover:bg-purple-700 focus:outline-none dark:focus:ring-purple-800">
+                <i class="fas fa-flask mr-2"></i>Test AJAX
+            </button>
+            <button type="button" onclick="testSimpleFolder()" class="text-white bg-orange-700 hover:bg-orange-800 focus:ring-4 focus:ring-orange-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-orange-600 dark:hover:bg-orange-700 focus:outline-none dark:focus:ring-orange-800">
+                <i class="fas fa-folder mr-2"></i>Test Simple
+            </button>
         </div>
     </div>
 
@@ -470,19 +479,57 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const submitBtn = this.querySelector('button[type="submit"]');
         const originalText = submitBtn.innerHTML;
+        const formData = new FormData(this);
+
+        // Validasi client-side
+        const namaFolder = formData.get('nama_folder');
+        if (!namaFolder || namaFolder.trim() === '') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Peringatan!',
+                text: 'Nama folder harus diisi.'
+            });
+            return;
+        }
+
+        // Debug: tampilkan data yang akan dikirim
+        console.log('Data yang akan dikirim:');
+        for (let pair of formData.entries()) {
+            console.log(pair[0] + ': ' + pair[1]);
+        }
 
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Membuat...';
         submitBtn.disabled = true;
 
         fetch('<?php echo site_url("user/file_pribadi/buat_folder"); ?>', {
             method: 'POST',
-            body: new FormData(this),
+            body: formData,
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log('Response status:', response.status);
+            console.log('Response headers:', response.headers.get('content-type'));
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            // Ambil response sebagai text dulu untuk debugging
+            return response.text().then(text => {
+                console.log('Raw response:', text);
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    console.error('JSON parse error:', e);
+                    console.error('Response text:', text);
+                    throw new Error('Invalid JSON response: ' + text.substring(0, 100));
+                }
+            });
+        })
         .then(data => {
+            console.log('Response data:', data);
             if (data.success) {
                 Swal.fire({
                     icon: 'success',
@@ -497,15 +544,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 Swal.fire({
                     icon: 'error',
                     title: 'Gagal!',
-                    text: data.message
+                    text: data.message || 'Terjadi kesalahan yang tidak diketahui.'
                 });
             }
         })
         .catch(error => {
+            console.error('Error:', error);
             Swal.fire({
                 icon: 'error',
                 title: 'Error!',
-                text: 'Terjadi kesalahan saat membuat folder.'
+                text: 'Terjadi kesalahan saat membuat folder. Silakan coba lagi.'
             });
         })
         .finally(() => {
@@ -683,6 +731,100 @@ function deleteFolder(id) {
                 });
             });
         }
+    });
+}
+
+// Test AJAX function
+function testAjax() {
+    console.log('Testing AJAX...');
+
+    const formData = new FormData();
+    formData.append('nama_folder', 'Test AJAX Folder');
+    formData.append('id_parent', '<?php echo $id_folder; ?>');
+    formData.append('deskripsi', 'Test AJAX description');
+
+    fetch('<?php echo site_url("user/file_pribadi/test_ajax"); ?>', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Response data:', data);
+        Swal.fire({
+            icon: data.success ? 'success' : 'error',
+            title: data.success ? 'Test Berhasil!' : 'Test Gagal!',
+            text: data.message,
+            html: data.success ? '<pre>' + JSON.stringify(data.data, null, 2) + '</pre>' : data.message
+        });
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'Terjadi kesalahan saat test AJAX: ' + error.message
+        });
+    });
+}
+
+// Test Simple Folder function
+function testSimpleFolder() {
+    console.log('Testing Simple Folder Creation...');
+
+    const formData = new FormData();
+    formData.append('nama_folder', 'Test Simple ' + Date.now());
+    formData.append('id_parent', '<?php echo $id_folder; ?>');
+    formData.append('deskripsi', 'Test simple folder creation');
+
+    fetch('<?php echo site_url("user/file_pribadi/buat_folder_simple"); ?>', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers.get('content-type'));
+
+        // Ambil response sebagai text dulu untuk debugging
+        return response.text().then(text => {
+            console.log('Raw response:', text);
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                console.error('JSON parse error:', e);
+                console.error('Response text:', text);
+                throw new Error('Invalid JSON response: ' + text.substring(0, 100));
+            }
+        });
+    })
+    .then(data => {
+        console.log('Response data:', data);
+        Swal.fire({
+            icon: data.success ? 'success' : 'error',
+            title: data.success ? 'Test Simple Berhasil!' : 'Test Simple Gagal!',
+            text: data.message
+        }).then(() => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'Terjadi kesalahan saat test simple folder: ' + error.message
+        });
     });
 }
 </script>

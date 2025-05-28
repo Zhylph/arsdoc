@@ -9,16 +9,16 @@ class File_pribadi extends CI_Controller {
 
     public function __construct() {
         parent::__construct();
-        
+
         // Cek apakah user sudah login dan memiliki role user
         if (!$this->session->userdata('logged_in')) {
             redirect('autentikasi/login');
         }
-        
+
         if ($this->session->userdata('role') !== 'user') {
             show_error('Anda tidak memiliki akses ke halaman ini.', 403, 'Akses Ditolak');
         }
-        
+
         $this->load->model('Model_file_pribadi');
         $this->load->model('Model_log_aktivitas');
         $this->load->library('form_validation');
@@ -62,21 +62,21 @@ class File_pribadi extends CI_Controller {
         $config['total_rows'] = $this->Model_file_pribadi->hitung_total_file($filter);
         $config['per_page'] = 20;
         $config['uri_segment'] = $id_folder ? 5 : 4;
-        
+
         $this->_setup_pagination($config);
-        
+
         $offset = $this->uri->segment($config['uri_segment']) ? $this->uri->segment($config['uri_segment']) : 0;
-        
+
         // Ambil data file dan folder
         $data['files'] = $this->Model_file_pribadi->ambil_semua_file($filter, $config['per_page'], $offset);
         $data['folders'] = $this->Model_file_pribadi->ambil_folder_by_parent($this->session->userdata('id_pengguna'), $id_folder);
         $data['pagination'] = $this->pagination->create_links();
         $data['filter'] = $filter;
         $data['total_rows'] = $config['total_rows'];
-        
+
         // Statistik file user
         $data['statistik'] = $this->Model_file_pribadi->ambil_statistik_file($this->session->userdata('id_pengguna'));
-        
+
         // Breadcrumb folder
         $data['folder_breadcrumb'] = $this->Model_file_pribadi->ambil_folder_breadcrumb($id_folder);
 
@@ -122,7 +122,7 @@ class File_pribadi extends CI_Controller {
         }
 
         $upload_data = $this->upload->data();
-        
+
         // Simpan data file ke database
         $data_file = array(
             'id_pengguna' => $this->session->userdata('id_pengguna'),
@@ -154,53 +154,260 @@ class File_pribadi extends CI_Controller {
      * Buat folder baru
      */
     public function buat_folder() {
+        // Set header JSON dan bersihkan output buffer
+        header('Content-Type: application/json');
+        ob_clean();
+
         if (!$this->input->is_ajax_request()) {
-            show_404();
+            echo json_encode(array('success' => false, 'message' => 'Invalid request'));
+            return;
         }
 
+        try {
+            // Cek apakah user sudah login
+            if (!$this->session->userdata('id_pengguna')) {
+                echo json_encode(array('success' => false, 'message' => 'Sesi telah berakhir. Silakan login kembali.'));
+                return;
+            }
+
+            $nama_folder = trim($this->input->post('nama_folder'));
+            $id_parent = $this->input->post('id_parent');
+            $deskripsi = trim($this->input->post('deskripsi'));
+
+            // Validasi input
+            if (empty($nama_folder)) {
+                echo json_encode(array('success' => false, 'message' => 'Nama folder harus diisi.'));
+                return;
+            }
+
+            // Validasi karakter nama folder
+            if (preg_match('/[<>:"/\\|?*]/', $nama_folder)) {
+                echo json_encode(array('success' => false, 'message' => 'Nama folder mengandung karakter yang tidak diizinkan.'));
+                return;
+            }
+
+            // Validasi panjang nama folder
+            if (strlen($nama_folder) > 255) {
+                echo json_encode(array('success' => false, 'message' => 'Nama folder terlalu panjang (maksimal 255 karakter).'));
+                return;
+            }
+
+            // Konversi id_parent ke null jika kosong
+            if (empty($id_parent)) {
+                $id_parent = null;
+            }
+
+            // Validasi parent folder jika ada
+            if ($id_parent) {
+                $parent_folder = $this->Model_file_pribadi->ambil_folder_by_id($id_parent);
+                if (!$parent_folder || $parent_folder['id_pengguna'] != $this->session->userdata('id_pengguna')) {
+                    echo json_encode(array('success' => false, 'message' => 'Parent folder tidak valid.'));
+                    return;
+                }
+            }
+
+            // Cek apakah nama folder sudah ada di level yang sama
+            if ($this->Model_file_pribadi->cek_nama_folder_exists($this->session->userdata('id_pengguna'), $nama_folder, $id_parent)) {
+                echo json_encode(array('success' => false, 'message' => 'Nama folder sudah ada di lokasi ini.'));
+                return;
+            }
+
+            $data_folder = array(
+                'id_pengguna' => $this->session->userdata('id_pengguna'),
+                'id_parent' => $id_parent,
+                'nama_folder' => $nama_folder,
+                'deskripsi' => $deskripsi
+            );
+
+            // Coba buat folder
+            $result = $this->Model_file_pribadi->tambah_folder($data_folder);
+
+            if ($result) {
+                // Log aktivitas tanpa mengganggu output
+                try {
+                    $this->Model_log_aktivitas->tambah_log(
+                        $this->session->userdata('id_pengguna'),
+                        'Membuat folder pribadi',
+                        "Membuat folder: $nama_folder"
+                    );
+                } catch (Exception $log_error) {
+                    // Jika logging gagal, jangan sampai mengganggu response
+                    // Hanya log ke file
+                    error_log('Gagal log aktivitas: ' . $log_error->getMessage());
+                }
+
+                echo json_encode(array('success' => true, 'message' => 'Folder berhasil dibuat.'));
+                return;
+            } else {
+                // Ambil error database jika ada
+                $db_error = $this->db->error();
+                $error_message = 'Gagal membuat folder.';
+
+                if (!empty($db_error['message'])) {
+                    // Log error untuk debugging (jangan tampilkan ke user)
+                    error_log('Database error saat membuat folder: ' . $db_error['message']);
+
+                    // Berikan pesan error yang lebih spesifik berdasarkan kode error
+                    if (strpos($db_error['message'], 'foreign key constraint') !== false) {
+                        $error_message = 'Terjadi kesalahan referensi data. Silakan coba lagi.';
+                    } elseif (strpos($db_error['message'], 'Duplicate entry') !== false) {
+                        $error_message = 'Nama folder sudah ada di lokasi ini.';
+                    }
+                }
+
+                echo json_encode(array('success' => false, 'message' => $error_message));
+                return;
+            }
+
+        } catch (Exception $e) {
+            // Log error untuk debugging
+            error_log('Exception saat membuat folder: ' . $e->getMessage());
+            echo json_encode(array('success' => false, 'message' => 'Terjadi kesalahan sistem. Silakan coba lagi.'));
+            return;
+        }
+    }
+
+    /**
+     * Debug method untuk troubleshooting
+     */
+    public function debug_buat_folder() {
+        // Tampilkan informasi debug
+        echo "<h2>Debug Buat Folder</h2>";
+        echo "<style>body{font-family:Arial;margin:20px;} .error{color:red;} .success{color:green;} .info{color:blue;}</style>";
+
+        // Cek session
+        echo "<h3>1. Session Check</h3>";
+        $user_id = $this->session->userdata('id_pengguna');
+        if ($user_id) {
+            echo "<p class='success'>✓ User ID: $user_id</p>";
+        } else {
+            echo "<p class='error'>✗ No user session</p>";
+            return;
+        }
+
+        // Cek database
+        echo "<h3>2. Database Check</h3>";
+        if ($this->db->table_exists('folder_pribadi')) {
+            echo "<p class='success'>✓ Table folder_pribadi exists</p>";
+        } else {
+            echo "<p class='error'>✗ Table folder_pribadi not found</p>";
+            return;
+        }
+
+        // Test data
+        echo "<h3>3. Test Insert</h3>";
+        $test_data = array(
+            'id_pengguna' => $user_id,
+            'nama_folder' => 'Debug Test ' . date('H:i:s'),
+            'deskripsi' => 'Test debug folder'
+        );
+
+        echo "<p class='info'>Test data: " . json_encode($test_data) . "</p>";
+
+        // Coba insert
+        try {
+            $result = $this->Model_file_pribadi->tambah_folder($test_data);
+            if ($result) {
+                echo "<p class='success'>✓ Insert successful</p>";
+
+                // Hapus test data
+                $this->db->where('nama_folder', $test_data['nama_folder']);
+                $this->db->delete('folder_pribadi');
+                echo "<p class='info'>Test data cleaned up</p>";
+            } else {
+                echo "<p class='error'>✗ Insert failed</p>";
+                $error = $this->db->error();
+                echo "<p class='error'>DB Error: " . print_r($error, true) . "</p>";
+            }
+        } catch (Exception $e) {
+            echo "<p class='error'>✗ Exception: " . $e->getMessage() . "</p>";
+        }
+
+        echo "<hr><p><a href='" . site_url('user/file_pribadi') . "'>Back to File Pribadi</a></p>";
+    }
+
+    /**
+     * Test AJAX endpoint untuk debugging
+     */
+    public function test_ajax() {
+        // Set header JSON dan bersihkan output buffer
+        header('Content-Type: application/json');
+        ob_clean();
+
+        // Cek apakah ini AJAX request
+        if (!$this->input->is_ajax_request()) {
+            echo json_encode(array('success' => false, 'message' => 'Bukan AJAX request'));
+            return;
+        }
+
+        // Cek session
+        $user_id = $this->session->userdata('id_pengguna');
+        if (!$user_id) {
+            echo json_encode(array('success' => false, 'message' => 'User tidak login'));
+            return;
+        }
+
+        // Ambil data POST
         $nama_folder = $this->input->post('nama_folder');
         $id_parent = $this->input->post('id_parent');
         $deskripsi = $this->input->post('deskripsi');
 
+        // Response dengan data yang diterima
+        echo json_encode(array(
+            'success' => true,
+            'message' => 'Test AJAX berhasil',
+            'data' => array(
+                'user_id' => $user_id,
+                'nama_folder' => $nama_folder,
+                'id_parent' => $id_parent,
+                'deskripsi' => $deskripsi,
+                'post_data' => $_POST
+            )
+        ));
+        exit; // Pastikan tidak ada output lain
+    }
+
+    /**
+     * Buat folder sederhana tanpa logging untuk test
+     */
+    public function buat_folder_simple() {
+        // Set header JSON dan bersihkan output buffer
+        header('Content-Type: application/json');
+        ob_clean();
+
+        if (!$this->input->is_ajax_request()) {
+            echo json_encode(array('success' => false, 'message' => 'Invalid request'));
+            exit;
+        }
+
+        // Cek session
+        $user_id = $this->session->userdata('id_pengguna');
+        if (!$user_id) {
+            echo json_encode(array('success' => false, 'message' => 'User tidak login'));
+            exit;
+        }
+
+        $nama_folder = trim($this->input->post('nama_folder'));
         if (empty($nama_folder)) {
-            echo json_encode(array('success' => false, 'message' => 'Nama folder harus diisi.'));
-            return;
+            echo json_encode(array('success' => false, 'message' => 'Nama folder harus diisi'));
+            exit;
         }
 
-        // Validasi parent folder jika ada
-        if ($id_parent) {
-            $parent_folder = $this->Model_file_pribadi->ambil_folder_by_id($id_parent);
-            if (!$parent_folder || $parent_folder['id_pengguna'] != $this->session->userdata('id_pengguna')) {
-                echo json_encode(array('success' => false, 'message' => 'Parent folder tidak valid.'));
-                return;
-            }
-        }
-
-        // Cek apakah nama folder sudah ada di level yang sama
-        if ($this->Model_file_pribadi->cek_nama_folder_exists($this->session->userdata('id_pengguna'), $nama_folder, $id_parent)) {
-            echo json_encode(array('success' => false, 'message' => 'Nama folder sudah ada di lokasi ini.'));
-            return;
-        }
-
-        $data_folder = array(
-            'id_pengguna' => $this->session->userdata('id_pengguna'),
-            'id_parent' => $id_parent,
+        // Insert langsung tanpa validasi rumit
+        $data = array(
+            'id_pengguna' => $user_id,
             'nama_folder' => $nama_folder,
-            'deskripsi' => $deskripsi
+            'deskripsi' => $this->input->post('deskripsi'),
+            'id_parent' => $this->input->post('id_parent') ?: null,
+            'tanggal_dibuat' => date('Y-m-d H:i:s')
         );
 
-        if ($this->Model_file_pribadi->tambah_folder($data_folder)) {
-            // Log aktivitas
-            $this->Model_log_aktivitas->tambah_log(
-                $this->session->userdata('id_pengguna'),
-                'Membuat folder pribadi',
-                "Membuat folder: $nama_folder"
-            );
-
-            echo json_encode(array('success' => true, 'message' => 'Folder berhasil dibuat.'));
+        if ($this->db->insert('folder_pribadi', $data)) {
+            echo json_encode(array('success' => true, 'message' => 'Folder berhasil dibuat'));
         } else {
-            echo json_encode(array('success' => false, 'message' => 'Gagal membuat folder.'));
+            echo json_encode(array('success' => false, 'message' => 'Gagal membuat folder'));
         }
+        exit;
     }
 
     /**
@@ -208,13 +415,13 @@ class File_pribadi extends CI_Controller {
      */
     public function download($id_file) {
         $file = $this->Model_file_pribadi->ambil_file_by_id($id_file);
-        
+
         if (!$file || $file['id_pengguna'] != $this->session->userdata('id_pengguna')) {
             show_404();
         }
 
         $file_path = './uploads/file_pribadi/' . $file['nama_file_sistem'];
-        
+
         if (!file_exists($file_path)) {
             show_404();
         }
@@ -242,7 +449,7 @@ class File_pribadi extends CI_Controller {
         }
 
         $id_file = $this->input->post('id_file');
-        
+
         if (!$id_file) {
             echo json_encode(array('success' => false, 'message' => 'ID file tidak valid.'));
             return;
@@ -283,7 +490,7 @@ class File_pribadi extends CI_Controller {
         }
 
         $id_folder = $this->input->post('id_folder');
-        
+
         if (!$id_folder) {
             echo json_encode(array('success' => false, 'message' => 'ID folder tidak valid.'));
             return;
@@ -406,7 +613,7 @@ class File_pribadi extends CI_Controller {
         $config['cur_tag_close'] = '</span></li>';
         $config['num_tag_open'] = '<li>';
         $config['num_tag_close'] = '</li>';
-        
+
         $this->load->library('pagination', $config);
     }
 }
