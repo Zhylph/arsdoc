@@ -494,3 +494,92 @@ table {
         padding: 0.5rem !important;
     }
 }
+
+/* Dashboard specific styles */
+.dashboard-card {
+    transition: all 0.3s ease-in-out;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-stat-number {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.dashboard-icon-gradient {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* Chart container improvements */
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+/* Activity timeline improvements */
+.activity-avatar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+}
+
+/* Table improvements */
+.dashboard-table tr:hover {
+    background-color: rgba(59, 130, 246, 0.05) !important;
+}
+
+.dashboard-table th {
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .dashboard-card {
+        margin-bottom: 1rem;
+    }
+
+    .dashboard-stat-number {
+        font-size: 2rem !important;
+    }
+
+    .chart-container {
+        height: 250px;
+    }
+}
+
+/* Loading states */
+.loading-shimmer {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+/* Dark mode specific dashboard styles */
+.dark .dashboard-card:hover {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.dark .dashboard-table tr:hover {
+    background-color: rgba(59, 130, 246, 0.1) !important;
+}
+
+.dark .loading-shimmer {
+    background: linear-gradient(90deg, #374151 25%, #4B5563 50%, #374151 75%);
+    background-size: 200% 100%;
+}

@@ -90,18 +90,32 @@ CREATE TABLE data_submission (
     FOREIGN KEY (id_field) REFERENCES field_dokumen(id_field)
 );
 
+-- Tabel untuk folder pribadi user
+CREATE TABLE folder_pribadi (
+    id_folder INT AUTO_INCREMENT PRIMARY KEY,
+    id_pengguna INT NOT NULL,
+    id_parent INT NULL,
+    nama_folder VARCHAR(255) NOT NULL,
+    deskripsi TEXT,
+    tanggal_dibuat TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_pengguna) REFERENCES pengguna(id_pengguna) ON DELETE CASCADE,
+    FOREIGN KEY (id_parent) REFERENCES folder_pribadi(id_folder) ON DELETE CASCADE
+);
+
 -- Tabel untuk file pribadi user
 CREATE TABLE file_pribadi (
     id_file INT AUTO_INCREMENT PRIMARY KEY,
     id_pengguna INT NOT NULL,
+    id_folder INT NULL,
     nama_file VARCHAR(255) NOT NULL,
-    nama_asli VARCHAR(255) NOT NULL,
-    path_file VARCHAR(500) NOT NULL,
-    ukuran_file INT NOT NULL,
-    tipe_file VARCHAR(50) NOT NULL,
+    nama_file_sistem VARCHAR(255) NOT NULL,
+    ukuran_file INT NOT NULL DEFAULT 0,
+    tipe_file VARCHAR(10) NOT NULL,
     deskripsi TEXT,
+    jumlah_download INT NOT NULL DEFAULT 0,
     tanggal_upload TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (id_pengguna) REFERENCES pengguna(id_pengguna) ON DELETE CASCADE
+    FOREIGN KEY (id_pengguna) REFERENCES pengguna(id_pengguna) ON DELETE CASCADE,
+    FOREIGN KEY (id_folder) REFERENCES folder_pribadi(id_folder) ON DELETE SET NULL
 );
 
 -- Tabel untuk log aktivitas sistem
@@ -117,25 +131,25 @@ CREATE TABLE log_aktivitas (
 );
 
 -- Insert data admin default
-INSERT INTO pengguna (nama_lengkap, email, password, role) VALUES 
+INSERT INTO pengguna (nama_lengkap, email, password, role) VALUES
 ('Administrator', 'admin@arsdoc.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'admin');
 
 -- Insert data staff default
-INSERT INTO pengguna (nama_lengkap, email, password, role) VALUES 
+INSERT INTO pengguna (nama_lengkap, email, password, role) VALUES
 ('Staff Arsip', 'staff@arsdoc.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'staff');
 
 -- Insert data user default
-INSERT INTO pengguna (nama_lengkap, email, password, role) VALUES 
+INSERT INTO pengguna (nama_lengkap, email, password, role) VALUES
 ('User Demo', 'user@arsdoc.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'user');
 
 -- Insert contoh jenis dokumen
-INSERT INTO jenis_dokumen (nama_jenis, deskripsi, dibuat_oleh) VALUES 
+INSERT INTO jenis_dokumen (nama_jenis, deskripsi, dibuat_oleh) VALUES
 ('Dokumen Kepegawaian', 'Dokumen yang berkaitan dengan kepegawaian seperti kenaikan pangkat, mutasi, dll', 2),
 ('Dokumen Akademik', 'Dokumen yang berkaitan dengan akademik seperti ijazah, transkrip, sertifikat', 2),
 ('Dokumen Keuangan', 'Dokumen yang berkaitan dengan keuangan seperti slip gaji, SPT, dll', 2);
 
 -- Insert contoh template dokumen
-INSERT INTO template_dokumen (id_jenis, nama_template, deskripsi, instruksi_upload, dibuat_oleh) VALUES 
+INSERT INTO template_dokumen (id_jenis, nama_template, deskripsi, instruksi_upload, dibuat_oleh) VALUES
 (1, 'Pengajuan Kenaikan Pangkat', 'Template untuk pengajuan kenaikan pangkat pegawai', 'Silakan upload dokumen pendukung yang diperlukan untuk pengajuan kenaikan pangkat', 2),
 (2, 'Legalisir Ijazah', 'Template untuk permohonan legalisir ijazah', 'Upload scan ijazah asli yang akan dilegalisir', 2),
 (3, 'Pengajuan Reimbursement', 'Template untuk pengajuan penggantian biaya', 'Upload bukti pembayaran dan dokumen pendukung lainnya', 2);

@@ -217,6 +217,16 @@ class Model_jenis_dokumen extends CI_Model {
     }
 
     /**
+     * Menghitung total jenis dokumen
+     */
+    public function hitung_total_jenis_dokumen($filter = array()) {
+        if (!empty($filter['status'])) {
+            $this->db->where('status', $filter['status']);
+        }
+        return $this->db->count_all_results($this->tabel);
+    }
+
+    /**
      * Mendapatkan jenis dokumen aktif untuk dropdown (alias)
      */
     public function ambil_jenis_aktif() {

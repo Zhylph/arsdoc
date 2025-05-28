@@ -222,13 +222,49 @@ class Model_submission extends CI_Model {
      * Mendapatkan data field submission
      */
     public function ambil_data_submission($id_submission) {
-        $this->db->select('ds.*, fd.nama_field, fd.tipe_field, fd.label_field, fd.required');
+        $this->db->select('ds.*, fd.nama_field, fd.tipe_field, fd.wajib_diisi, ds.nilai_field as value');
         $this->db->from($this->tabel_data . ' ds');
         $this->db->join('field_dokumen fd', 'ds.id_field = fd.id_field', 'left');
         $this->db->where('ds.id_submission', $id_submission);
         $this->db->order_by('fd.urutan', 'ASC');
 
         return $this->db->get()->result_array();
+    }
+
+    /**
+     * Mendapatkan data submission berdasarkan field tertentu
+     */
+    public function ambil_data_submission_by_field($id_submission, $id_field) {
+        $this->db->select('*, nilai_field as value');
+        $this->db->where('id_submission', $id_submission);
+        $this->db->where('id_field', $id_field);
+
+        $result = $this->db->get($this->tabel_data)->row_array();
+        return $result ? $result : null;
+    }
+
+    /**
+     * Menghapus data submission saja (tanpa submission utama)
+     */
+    public function hapus_data_submission($id_submission) {
+        $this->db->where('id_submission', $id_submission);
+        return $this->db->delete($this->tabel_data);
+    }
+
+    /**
+     * Menambah data submission untuk submission yang sudah ada
+     */
+    public function tambah_data_submission($id_submission, $data_fields) {
+        if (empty($data_fields)) {
+            return true;
+        }
+
+        foreach ($data_fields as $field) {
+            $field['id_submission'] = $id_submission;
+            $this->db->insert($this->tabel_data, $field);
+        }
+
+        return true;
     }
 
     /**
@@ -311,11 +347,4 @@ class Model_submission extends CI_Model {
         return $this->db->get()->result_array();
     }
 
-    /**
-     * Menghitung submission berdasarkan status
-     */
-    public function hitung_submission_by_status($status) {
-        $this->db->where('status', $status);
-        return $this->db->count_all_results($this->tabel_submission);
-    }
 }

@@ -9,16 +9,16 @@ class Submission extends CI_Controller {
 
     public function __construct() {
         parent::__construct();
-        
+
         // Cek apakah user sudah login dan memiliki role user
         if (!$this->session->userdata('logged_in')) {
             redirect('autentikasi/login');
         }
-        
+
         if ($this->session->userdata('role') !== 'user') {
             show_error('Anda tidak memiliki akses ke halaman ini.', 403, 'Akses Ditolak');
         }
-        
+
         $this->load->model('Model_template_dokumen');
         $this->load->model('Model_submission');
         $this->load->model('Model_log_aktivitas');
@@ -59,7 +59,7 @@ class Submission extends CI_Controller {
         if ($this->input->post()) {
             if ($this->_validasi_form_submission($data['field_template'])) {
                 $result = $this->_proses_submission($template, $data['field_template']);
-                
+
                 if ($result['success']) {
                     $this->session->set_flashdata('success', 'Submission berhasil dibuat dengan nomor: ' . $result['nomor_submission']);
                     redirect('user/dokumen/detail_submission/' . $result['id_submission']);
@@ -109,7 +109,7 @@ class Submission extends CI_Controller {
         // Ambil field template dan data submission
         $data['field_template'] = $this->Model_template_dokumen->ambil_field_by_template($submission['id_template']);
         $data['data_submission'] = $this->Model_submission->ambil_data_submission($id_submission);
-        
+
         // Convert data submission ke format yang mudah diakses
         $data['submission_values'] = array();
         foreach ($data['data_submission'] as $field_data) {
@@ -119,7 +119,7 @@ class Submission extends CI_Controller {
         if ($this->input->post()) {
             if ($this->_validasi_form_submission($data['field_template'], 'edit')) {
                 $result = $this->_proses_edit_submission($submission, $data['field_template']);
-                
+
                 if ($result['success']) {
                     $this->session->set_flashdata('success', 'Submission berhasil diperbarui.');
                     redirect('user/dokumen/detail_submission/' . $id_submission);
@@ -141,8 +141,8 @@ class Submission extends CI_Controller {
     private function _validasi_form_submission($field_template, $mode = 'buat') {
         foreach ($field_template as $field) {
             $rules = '';
-            
-            if ($field['required']) {
+
+            if ($field['wajib_diisi']) {
                 if ($field['tipe_field'] === 'file' && $mode === 'edit') {
                     // File tidak wajib saat edit jika sudah ada file sebelumnya
                     $rules = 'trim';
@@ -152,33 +152,33 @@ class Submission extends CI_Controller {
             } else {
                 $rules = 'trim';
             }
-            
+
             // Validasi khusus berdasarkan tipe field
             switch ($field['tipe_field']) {
                 case 'email':
-                    if ($field['required']) {
+                    if ($field['wajib_diisi']) {
                         $rules .= '|valid_email';
                     } else {
                         $rules .= '|valid_email';
                     }
                     break;
                 case 'number':
-                    if ($field['required']) {
+                    if ($field['wajib_diisi']) {
                         $rules .= '|numeric';
                     } else {
                         $rules .= '|numeric';
                     }
                     break;
                 case 'url':
-                    if ($field['required']) {
+                    if ($field['wajib_diisi']) {
                         $rules .= '|valid_url';
                     } else {
                         $rules .= '|valid_url';
                     }
                     break;
             }
-            
-            $this->form_validation->set_rules($field['nama_field'], $field['label_field'], $rules);
+
+            $this->form_validation->set_rules($field['nama_field'], $field['nama_field'], $rules);
         }
 
         // Set pesan error dalam bahasa Indonesia
@@ -238,7 +238,7 @@ class Submission extends CI_Controller {
 
             $data_field[] = array(
                 'id_field' => $field['id_field'],
-                'value' => $field_value
+                'nilai_field' => $field_value
             );
         }
 
@@ -300,7 +300,7 @@ class Submission extends CI_Controller {
                     if ($upload_result['success']) {
                         $field_value = $upload_result['file_name'];
                         $uploaded_files[] = $upload_result['file_name'];
-                        
+
                         // Hapus file lama jika ada
                         if (!empty($file_lama[$field['nama_field']])) {
                             $old_file = './uploads/dokumen/' . $file_lama[$field['nama_field']];
@@ -327,7 +327,7 @@ class Submission extends CI_Controller {
 
             $data_field[] = array(
                 'id_field' => $field['id_field'],
-                'value' => $field_value
+                'nilai_field' => $field_value
             );
         }
 
