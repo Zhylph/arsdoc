@@ -154,20 +154,32 @@ class File_pribadi extends CI_Controller {
      * Buat folder baru
      */
     public function buat_folder() {
-        // Set header JSON dan bersihkan output buffer
+        // Nonaktifkan error reporting untuk method ini
+        $old_error_reporting = error_reporting(0);
+
+        // Bersihkan semua output buffer yang mungkin ada
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+
+        // Set header JSON dan mulai output buffering baru
         header('Content-Type: application/json');
-        ob_clean();
+        ob_start();
 
         if (!$this->input->is_ajax_request()) {
             echo json_encode(array('success' => false, 'message' => 'Invalid request'));
-            return;
+            ob_end_flush();
+            error_reporting($old_error_reporting);
+            exit;
         }
 
         try {
             // Cek apakah user sudah login
             if (!$this->session->userdata('id_pengguna')) {
                 echo json_encode(array('success' => false, 'message' => 'Sesi telah berakhir. Silakan login kembali.'));
-                return;
+                ob_end_flush();
+                error_reporting($old_error_reporting);
+                exit;
             }
 
             $nama_folder = trim($this->input->post('nama_folder'));
@@ -177,19 +189,25 @@ class File_pribadi extends CI_Controller {
             // Validasi input
             if (empty($nama_folder)) {
                 echo json_encode(array('success' => false, 'message' => 'Nama folder harus diisi.'));
-                return;
+                ob_end_flush();
+                error_reporting($old_error_reporting);
+                exit;
             }
 
             // Validasi karakter nama folder
-            if (preg_match('/[<>:"/\\|?*]/', $nama_folder)) {
+            if (preg_match('/[<>:"\\/\\\\|?*]/', $nama_folder)) {
                 echo json_encode(array('success' => false, 'message' => 'Nama folder mengandung karakter yang tidak diizinkan.'));
-                return;
+                ob_end_flush();
+                error_reporting($old_error_reporting);
+                exit;
             }
 
             // Validasi panjang nama folder
             if (strlen($nama_folder) > 255) {
                 echo json_encode(array('success' => false, 'message' => 'Nama folder terlalu panjang (maksimal 255 karakter).'));
-                return;
+                ob_end_flush();
+                error_reporting($old_error_reporting);
+                exit;
             }
 
             // Konversi id_parent ke null jika kosong
@@ -202,14 +220,18 @@ class File_pribadi extends CI_Controller {
                 $parent_folder = $this->Model_file_pribadi->ambil_folder_by_id($id_parent);
                 if (!$parent_folder || $parent_folder['id_pengguna'] != $this->session->userdata('id_pengguna')) {
                     echo json_encode(array('success' => false, 'message' => 'Parent folder tidak valid.'));
-                    return;
+                    ob_end_flush();
+                    error_reporting($old_error_reporting);
+                    exit;
                 }
             }
 
             // Cek apakah nama folder sudah ada di level yang sama
             if ($this->Model_file_pribadi->cek_nama_folder_exists($this->session->userdata('id_pengguna'), $nama_folder, $id_parent)) {
                 echo json_encode(array('success' => false, 'message' => 'Nama folder sudah ada di lokasi ini.'));
-                return;
+                ob_end_flush();
+                error_reporting($old_error_reporting);
+                exit;
             }
 
             $data_folder = array(
@@ -237,7 +259,9 @@ class File_pribadi extends CI_Controller {
                 }
 
                 echo json_encode(array('success' => true, 'message' => 'Folder berhasil dibuat.'));
-                return;
+                ob_end_flush();
+                error_reporting($old_error_reporting);
+                exit;
             } else {
                 // Ambil error database jika ada
                 $db_error = $this->db->error();
@@ -256,14 +280,18 @@ class File_pribadi extends CI_Controller {
                 }
 
                 echo json_encode(array('success' => false, 'message' => $error_message));
-                return;
+                ob_end_flush();
+                error_reporting($old_error_reporting);
+                exit;
             }
 
         } catch (Exception $e) {
             // Log error untuk debugging
             error_log('Exception saat membuat folder: ' . $e->getMessage());
             echo json_encode(array('success' => false, 'message' => 'Terjadi kesalahan sistem. Silakan coba lagi.'));
-            return;
+            ob_end_flush();
+            error_reporting($old_error_reporting);
+            exit;
         }
     }
 
@@ -407,6 +435,80 @@ class File_pribadi extends CI_Controller {
         } else {
             echo json_encode(array('success' => false, 'message' => 'Gagal membuat folder'));
         }
+        exit;
+    }
+
+    /**
+     * Method untuk debug response JSON
+     */
+    public function debug_json_response() {
+        // Set header JSON dan bersihkan output buffer
+        header('Content-Type: application/json');
+        ob_clean();
+
+        // Test response sederhana
+        echo json_encode(array(
+            'success' => true,
+            'message' => 'Test JSON response berhasil',
+            'timestamp' => date('Y-m-d H:i:s'),
+            'data' => array(
+                'test' => 'value',
+                'number' => 123
+            )
+        ));
+        exit;
+    }
+
+    /**
+     * Buat folder tanpa logging untuk menguji masalah
+     */
+    public function buat_folder_no_log() {
+        // Bersihkan semua output buffer yang mungkin ada
+        while (ob_get_level()) {
+            ob_end_clean();
+        }
+
+        // Set header JSON dan mulai output buffering baru
+        header('Content-Type: application/json');
+        ob_start();
+
+        if (!$this->input->is_ajax_request()) {
+            echo json_encode(array('success' => false, 'message' => 'Invalid request'));
+            ob_end_flush();
+            exit;
+        }
+
+        // Cek session
+        $user_id = $this->session->userdata('id_pengguna');
+        if (!$user_id) {
+            echo json_encode(array('success' => false, 'message' => 'User tidak login'));
+            ob_end_flush();
+            exit;
+        }
+
+        $nama_folder = trim($this->input->post('nama_folder'));
+        if (empty($nama_folder)) {
+            echo json_encode(array('success' => false, 'message' => 'Nama folder harus diisi'));
+            ob_end_flush();
+            exit;
+        }
+
+        // Insert langsung tanpa validasi rumit dan tanpa logging
+        $data = array(
+            'id_pengguna' => $user_id,
+            'nama_folder' => $nama_folder,
+            'deskripsi' => $this->input->post('deskripsi'),
+            'id_parent' => $this->input->post('id_parent') ?: null,
+            'tanggal_dibuat' => date('Y-m-d H:i:s')
+        );
+
+        if ($this->db->insert('folder_pribadi', $data)) {
+            echo json_encode(array('success' => true, 'message' => 'Folder berhasil dibuat'));
+        } else {
+            $db_error = $this->db->error();
+            echo json_encode(array('success' => false, 'message' => 'Gagal membuat folder: ' . $db_error['message']));
+        }
+        ob_end_flush();
         exit;
     }
 

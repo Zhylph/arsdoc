@@ -103,7 +103,50 @@
         <div class="p-6">
             <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-6">Form Submission Dokumen</h3>
 
-            <?php echo form_open_multipart('user/submission/buat/' . $template['id_template'], array('class' => 'space-y-6')); ?>
+            <!-- Flash Messages -->
+            <?php if ($this->session->flashdata('error')): ?>
+            <div class="flex items-center p-4 mb-4 text-sm text-red-800 border border-red-300 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 dark:border-red-800" role="alert">
+                <svg class="flex-shrink-0 inline w-4 h-4 mr-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+                </svg>
+                <div>
+                    <span class="font-medium">Error:</span>
+                    <?php echo $this->session->flashdata('error'); ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <?php if ($this->session->flashdata('success')): ?>
+            <div class="flex items-center p-4 mb-4 text-sm text-green-800 border border-green-300 rounded-lg bg-green-50 dark:bg-gray-800 dark:text-green-400 dark:border-green-800" role="alert">
+                <svg class="flex-shrink-0 inline w-4 h-4 mr-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+                </svg>
+                <div>
+                    <span class="font-medium">Sukses:</span>
+                    <?php echo $this->session->flashdata('success'); ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <!-- Validation Errors -->
+            <?php if (validation_errors()): ?>
+            <div class="flex items-center p-4 mb-4 text-sm text-red-800 border border-red-300 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 dark:border-red-800" role="alert">
+                <svg class="flex-shrink-0 inline w-4 h-4 mr-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                    <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z"/>
+                </svg>
+                <div>
+                    <span class="font-medium">Terjadi kesalahan validasi:</span>
+                    <?php echo validation_errors(); ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <!-- Debug: Form action URL -->
+            <?php
+            $form_action = site_url('user/submission/buat/' . $template['id_template']);
+            echo '<!-- Form action: ' . $form_action . ' -->';
+            ?>
+            <form action="<?php echo $form_action; ?>" method="POST" enctype="multipart/form-data" class="space-y-6" id="submission-form">
 
                 <?php if (!empty($field_template)): ?>
                     <?php foreach ($field_template as $field): ?>
@@ -226,7 +269,7 @@
                     </button>
                 </div>
 
-            <?php echo form_close(); ?>
+            </form>
         </div>
     </div>
 </div>
@@ -235,6 +278,29 @@
 // File upload preview and validation
 document.addEventListener('DOMContentLoaded', function() {
     const fileInputs = document.querySelectorAll('input[type="file"]');
+    const form = document.getElementById('submission-form');
+
+    // Debug form submission
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            console.log('Form submission started');
+            console.log('Form action:', this.action);
+            console.log('Form method:', this.method);
+            console.log('Form enctype:', this.enctype);
+
+            // Check file uploads
+            const fileInputs = this.querySelectorAll('input[type="file"]');
+            fileInputs.forEach(function(input) {
+                if (input.files.length > 0) {
+                    console.log('File selected for ' + input.name + ':', input.files[0].name);
+                } else {
+                    console.log('No file selected for ' + input.name);
+                }
+            });
+
+            // Don't prevent default - let form submit normally
+        });
+    }
 
     fileInputs.forEach(function(input) {
         input.addEventListener('change', function() {

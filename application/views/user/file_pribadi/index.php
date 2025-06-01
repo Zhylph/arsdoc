@@ -57,7 +57,7 @@
             <button type="button" data-modal-target="folderModal" data-modal-toggle="folderModal" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
                 <i class="fas fa-folder-plus mr-2"></i>Buat Folder
             </button>
-            <a href="<?php echo site_url('user/file_pribadi/debug_buat_folder'); ?>" target="_blank" class="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-red-600 dark:hover:bg-red-700 focus:outline-none dark:focus:ring-red-800">
+            <!-- <a href="<?php echo site_url('user/file_pribadi/debug_buat_folder'); ?>" target="_blank" class="text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-red-600 dark:hover:bg-red-700 focus:outline-none dark:focus:ring-red-800">
                 <i class="fas fa-bug mr-2"></i>Debug
             </a>
             <button type="button" onclick="testAjax()" class="text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:ring-purple-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-purple-600 dark:hover:bg-purple-700 focus:outline-none dark:focus:ring-purple-800">
@@ -66,6 +66,12 @@
             <button type="button" onclick="testSimpleFolder()" class="text-white bg-orange-700 hover:bg-orange-800 focus:ring-4 focus:ring-orange-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-orange-600 dark:hover:bg-orange-700 focus:outline-none dark:focus:ring-orange-800">
                 <i class="fas fa-folder mr-2"></i>Test Simple
             </button>
+            <button type="button" onclick="testNoLogFolder()" class="text-white bg-pink-700 hover:bg-pink-800 focus:ring-4 focus:ring-pink-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-pink-600 dark:hover:bg-pink-700 focus:outline-none dark:focus:ring-pink-800">
+                <i class="fas fa-folder-open mr-2"></i>Test No Log
+            </button>
+            <button type="button" onclick="testDebugJson()" class="text-white bg-indigo-700 hover:bg-indigo-800 focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-indigo-600 dark:hover:bg-indigo-700 focus:outline-none dark:focus:ring-indigo-800">
+                <i class="fas fa-code mr-2"></i>Test JSON
+            </button> --> -->
         </div>
     </div>
 
@@ -824,6 +830,104 @@ function testSimpleFolder() {
             icon: 'error',
             title: 'Error!',
             text: 'Terjadi kesalahan saat test simple folder: ' + error.message
+        });
+    });
+}
+
+// Test No Log Folder function
+function testNoLogFolder() {
+    console.log('Testing No Log Folder Creation...');
+
+    const formData = new FormData();
+    formData.append('nama_folder', 'Test No Log ' + Date.now());
+    formData.append('id_parent', '<?php echo $id_folder; ?>');
+    formData.append('deskripsi', 'Test no log folder creation');
+
+    fetch('<?php echo site_url("user/file_pribadi/buat_folder_no_log"); ?>', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers.get('content-type'));
+
+        // Ambil response sebagai text dulu untuk debugging
+        return response.text().then(text => {
+            console.log('Raw response:', text);
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                console.error('JSON parse error:', e);
+                console.error('Response text:', text);
+                throw new Error('Invalid JSON response: ' + text.substring(0, 100));
+            }
+        });
+    })
+    .then(data => {
+        console.log('Response data:', data);
+        Swal.fire({
+            icon: data.success ? 'success' : 'error',
+            title: data.success ? 'Test No Log Berhasil!' : 'Test No Log Gagal!',
+            text: data.message
+        }).then(() => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'Terjadi kesalahan saat test no log folder: ' + error.message
+        });
+    });
+}
+
+// Test Debug JSON Response
+function testDebugJson() {
+    console.log('Testing Debug JSON Response...');
+
+    fetch('<?php echo site_url("user/file_pribadi/debug_json_response"); ?>', {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers.get('content-type'));
+
+        return response.text().then(text => {
+            console.log('Raw response:', text);
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                console.error('JSON parse error:', e);
+                console.error('Response text:', text);
+                throw new Error('Invalid JSON response: ' + text.substring(0, 100));
+            }
+        });
+    })
+    .then(data => {
+        console.log('Response data:', data);
+        Swal.fire({
+            icon: data.success ? 'success' : 'error',
+            title: data.success ? 'Debug JSON Berhasil!' : 'Debug JSON Gagal!',
+            text: data.message,
+            html: data.success ? '<pre>' + JSON.stringify(data, null, 2) + '</pre>' : data.message
+        });
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: 'Terjadi kesalahan saat test debug JSON: ' + error.message
         });
     });
 }

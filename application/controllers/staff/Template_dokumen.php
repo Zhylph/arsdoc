@@ -9,19 +9,20 @@ class Template_dokumen extends CI_Controller {
 
     public function __construct() {
         parent::__construct();
-        
+
         // Cek apakah user sudah login dan memiliki role staff
         if (!$this->session->userdata('logged_in')) {
             redirect('autentikasi/login');
         }
-        
+
         if ($this->session->userdata('role') !== 'staff') {
             show_error('Anda tidak memiliki akses ke halaman ini.', 403, 'Akses Ditolak');
         }
-        
+
         $this->load->model('Model_template_dokumen');
         $this->load->model('Model_jenis_dokumen');
         $this->load->library('pagination');
+        $this->load->helper('text');
     }
 
     /**
@@ -65,7 +66,7 @@ class Template_dokumen extends CI_Controller {
         $config['page_query_string'] = TRUE;
         $config['query_string_segment'] = 'page';
         $config['use_page_numbers'] = TRUE;
-        
+
         // Pagination styling (sama seperti jenis dokumen)
         $config['full_tag_open'] = '<nav><ul class="flex items-center -space-x-px h-8 text-sm">';
         $config['full_tag_close'] = '</ul></nav>';
@@ -119,7 +120,7 @@ class Template_dokumen extends CI_Controller {
 
         // Ambil jenis dokumen untuk dropdown
         $data['jenis_dokumen'] = $this->Model_jenis_dokumen->ambil_jenis_dokumen_aktif();
-        
+
         // Pre-select jenis jika ada parameter
         $data['selected_jenis'] = $this->input->get('jenis');
 
@@ -319,22 +320,22 @@ class Template_dokumen extends CI_Controller {
      */
     private function _proses_fields() {
         $fields = array();
-        $nama_fields = $this->input->post('nama_field');
-        $tipe_fields = $this->input->post('tipe_field');
-        $wajib_fields = $this->input->post('wajib_field');
-        $placeholder_fields = $this->input->post('placeholder_field');
-        $opsi_fields = $this->input->post('opsi_field');
+        $fields_data = $this->input->post('fields');
 
-        if ($nama_fields) {
-            foreach ($nama_fields as $index => $nama_field) {
-                if (!empty($nama_field)) {
+        if ($fields_data && is_array($fields_data)) {
+            foreach ($fields_data as $index => $field_data) {
+                if (!empty($field_data['nama_field'])) {
+                    // Map wajib_diisi to boolean for database compatibility
+                    $wajib_diisi = ($field_data['wajib_diisi'] === 'ya') ? 1 : 0;
+
                     $fields[] = array(
-                        'nama_field' => $nama_field,
-                        'tipe_field' => $tipe_fields[$index],
-                        'wajib_diisi' => isset($wajib_fields[$index]) ? 1 : 0,
-                        'placeholder' => $placeholder_fields[$index] ?? '',
-                        'opsi_pilihan' => $opsi_fields[$index] ?? '',
-                        'urutan' => $index + 1
+                        'nama_field' => $field_data['nama_field'],
+                        'tipe_field' => $field_data['tipe_field'],
+                        'wajib_diisi' => $wajib_diisi,
+                        'placeholder' => $field_data['placeholder'] ?? '',
+                        'urutan' => $field_data['urutan'] ?? $index
+                        // Note: opsi field removed as it doesn't exist in current database schema
+                        // Options can be stored in placeholder or validasi field if needed
                     );
                 }
             }
@@ -438,7 +439,7 @@ class Template_dokumen extends CI_Controller {
             );
 
             echo json_encode(array(
-                'success' => true, 
+                'success' => true,
                 'message' => 'Template dokumen berhasil diduplikasi.',
                 'redirect' => site_url('staff/template_dokumen/detail/' . $id_template_baru)
             ));
