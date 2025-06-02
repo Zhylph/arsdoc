@@ -145,15 +145,26 @@
             <?php
             $form_action = site_url('user/submission/buat/' . $template['id_template']);
             echo '<!-- Form action: ' . $form_action . ' -->';
+            // Debugging wajib_diisi values in view
+            echo '<!-- Debug wajib_diisi values: ';
+            if (!empty($field_template)) {
+                foreach ($field_template as $field) {
+                    echo $field['nama_field'] . ': [' . $field['wajib_diisi'] . '], ';
+                }
+            }
+            echo ' -->';
             ?>
-            <form action="<?php echo $form_action; ?>" method="POST" enctype="multipart/form-data" class="space-y-6" id="submission-form">
+            <form action="<?php echo $form_action; ?>" method="POST" enctype="multipart/form-data" class="space-y-6" id="submission-form" onsubmit="console.log('Form submitted:', this); return true;">
 
                 <?php if (!empty($field_template)): ?>
                     <?php foreach ($field_template as $field): ?>
                         <div class="form-group">
                             <label for="<?php echo $field['nama_field']; ?>" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 <?php echo ucfirst(str_replace('_', ' ', $field['nama_field'])); ?>
-                                <?php if ($field['wajib_diisi']): ?>
+                                <?php
+                                // Check if field is required - handle both 'ya'/'tidak' and 1/0 values
+                                $is_required = ($field['wajib_diisi'] === 'ya' || $field['wajib_diisi'] === '1' || $field['wajib_diisi'] == 1);
+                                if ($is_required): ?>
                                     <span class="text-red-500">*</span>
                                 <?php endif; ?>
                             </label>
@@ -170,7 +181,9 @@
                                 'value' => set_value($field['nama_field'])
                             );
 
-                            if ($field['wajib_diisi']) {
+                            // Check if field is required - handle both 'ya'/'tidak' and 1/0 values
+                            $is_required = ($field['wajib_diisi'] === 'ya' || $field['wajib_diisi'] === '1' || $field['wajib_diisi'] == 1);
+                            if ($is_required) {
                                 $field_attributes['required'] = 'required';
                             }
                             ?>
@@ -224,6 +237,10 @@
                                         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                             Ukuran maksimal: <?php echo round($template['max_ukuran_file'] / 1024 / 1024, 1); ?> MB
                                         </p>
+                                    <?php else: ?>
+                                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                                            Ukuran maksimal: 10 MB
+                                        </p>
                                     <?php endif; ?>
                                     <?php break; ?>
 
@@ -275,59 +292,178 @@
 </div>
 
 <script>
-// File upload preview and validation
+// Enhanced file upload validation and debugging
 document.addEventListener('DOMContentLoaded', function() {
     const fileInputs = document.querySelectorAll('input[type="file"]');
     const form = document.getElementById('submission-form');
 
-    // Debug form submission
+    // Debug template data
+    console.log('=== TEMPLATE DEBUG INFO ===');
+    console.log('Template data:', <?php echo json_encode($template); ?>);
+    console.log('Field template:', <?php echo json_encode($field_template); ?>);
+
+    // Check PHP upload limits
+    console.log('=== PHP UPLOAD LIMITS ===');
+    console.log('upload_max_filesize:', '<?php echo ini_get("upload_max_filesize"); ?>');
+    console.log('post_max_size:', '<?php echo ini_get("post_max_size"); ?>');
+    console.log('max_file_uploads:', '<?php echo ini_get("max_file_uploads"); ?>');
+
+    // Add real-time validation to file inputs
+    fileInputs.forEach(function(input) {
+        // Get max size from template
+        const templateMaxSize = <?php echo isset($template['max_ukuran_file']) ? $template['max_ukuran_file'] : 10485760; ?>; // bytes
+        const maxSizeMB = (templateMaxSize / 1024 / 1024).toFixed(1);
+
+        console.log('File input:', input.name, 'Max size:', maxSizeMB + 'MB');
+
+        // Add validation message container
+        const validationDiv = document.createElement('div');
+        validationDiv.className = 'validation-message mt-2 text-sm';
+        input.parentNode.appendChild(validationDiv);
+
+        // Update max size display
+        const existingInfo = input.parentNode.querySelector('.text-xs.text-gray-500');
+        if (existingInfo && existingInfo.textContent.includes('Ukuran maksimal')) {
+            existingInfo.textContent = 'Ukuran maksimal: ' + maxSizeMB + ' MB';
+        }
+
+        input.addEventListener('change', function() {
+            const file = this.files[0];
+            const validationDiv = this.parentNode.querySelector('.validation-message');
+
+            if (file) {
+                const fileName = file.name;
+                const fileSize = file.size;
+                const fileSizeMB = (fileSize / 1024 / 1024).toFixed(2);
+                const fileType = file.type;
+                const fileExt = fileName.split('.').pop().toLowerCase();
+
+                console.log('=== FILE SELECTED ===');
+                console.log('Field:', this.name);
+                console.log('File name:', fileName);
+                console.log('File size:', fileSize + ' bytes (' + fileSizeMB + ' MB)');
+                console.log('File type:', fileType);
+                console.log('File extension:', fileExt);
+                console.log('Max allowed:', maxSizeMB + ' MB');
+
+                // Validate file size
+                let isValid = true;
+                let errorMessage = '';
+
+                if (fileSize > templateMaxSize) {
+                    isValid = false;
+                    errorMessage = `File terlalu besar! Maksimal ${maxSizeMB} MB, file Anda ${fileSizeMB} MB`;
+                }
+
+                // Validate file type
+                const allowedTypes = '<?php echo isset($template["tipe_file_diizinkan"]) ? $template["tipe_file_diizinkan"] : "pdf,doc,docx,jpg,jpeg,png"; ?>';
+                const allowedExtensions = allowedTypes.split(',').map(ext => ext.trim().toLowerCase());
+
+                if (!allowedExtensions.includes(fileExt)) {
+                    isValid = false;
+                    errorMessage = `Tipe file tidak diizinkan! Hanya: ${allowedTypes}`;
+                }
+
+                // Display validation result
+                if (isValid) {
+                    validationDiv.innerHTML = `
+                        <div class="flex items-center text-green-600">
+                            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                            </svg>
+                            <span>✓ ${fileName} (${fileSizeMB} MB) - Valid</span>
+                        </div>
+                    `;
+                } else {
+                    validationDiv.innerHTML = `
+                        <div class="flex items-center text-red-600">
+                            <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+                            </svg>
+                            <span>✗ ${errorMessage}</span>
+                        </div>
+                    `;
+                }
+            } else {
+                validationDiv.innerHTML = '';
+            }
+        });
+    });
+
+    // Enhanced form submission validation
     if (form) {
         form.addEventListener('submit', function(e) {
-            console.log('Form submission started');
+            console.log('=== FORM SUBMISSION ===');
             console.log('Form action:', this.action);
             console.log('Form method:', this.method);
             console.log('Form enctype:', this.enctype);
 
-            // Check file uploads
+            let hasError = false;
+            let errorMessages = [];
+
+            // Check all file inputs
             const fileInputs = this.querySelectorAll('input[type="file"]');
             fileInputs.forEach(function(input) {
-                if (input.files.length > 0) {
-                    console.log('File selected for ' + input.name + ':', input.files[0].name);
-                } else {
-                    console.log('No file selected for ' + input.name);
+                const file = input.files[0];
+                const isRequired = input.hasAttribute('required');
+
+                console.log('Checking field:', input.name, 'Required:', isRequired, 'Has file:', !!file);
+
+                if (isRequired && !file) {
+                    hasError = true;
+                    errorMessages.push(`File ${input.name} wajib diisi`);
+                    console.log('Validation error: Required file missing', input.name);
+                }
+
+                if (file) {
+                    const templateMaxSize = <?php echo isset($template['max_ukuran_file']) ? $template['max_ukuran_file'] : 10485760; ?>;
+                    console.log('File size check:', input.name, 'Size:', file.size, 'Max allowed:', templateMaxSize);
+                    if (file.size > templateMaxSize) {
+                        hasError = true;
+                        errorMessages.push(`File ${input.name} terlalu besar (${(file.size/1024/1024).toFixed(2)} MB)`);
+                        console.log('Validation error: File size too large', input.name, file.size);
+                    }
+
+                     // Validate file type - this part is already covered by the change listener, but double-check
+                    const allowedTypes = '<?php echo isset($template["tipe_file_diizinkan"]) ? $template["tipe_file_diizinkan"] : "pdf,doc,docx,jpg,jpeg,png"; ?>';
+                    const allowedExtensions = allowedTypes.split(',').map(ext => ext.trim().toLowerCase());
+                    const fileExt = file.name.split('.').pop().toLowerCase();
+                     console.log('File type check:', input.name, 'Extension:', fileExt, 'Allowed:', allowedExtensions);
+                    if (!allowedExtensions.includes(fileExt)) {
+                         hasError = true;
+                        errorMessages.push(`Tipe file ${input.name} tidak diizinkan (${fileExt})`);
+                        console.log('Validation error: Invalid file type', input.name, fileExt);
+                    }
                 }
             });
 
-            // Don't prevent default - let form submit normally
+            // Check validation messages generated by real-time validation
+            const errorDivs = this.querySelectorAll('.validation-message .text-red-600');
+             console.log('Number of real-time validation errors found:', errorDivs.length);
+            if (errorDivs.length > 0) {
+                hasError = true;
+                errorMessages.push('Ada file yang tidak valid');
+                console.log('Validation error: Real-time validation failed');
+            }
+
+            console.log('Has validation errors overall:', hasError);
+
+            if (hasError) {
+                console.error('Form validation errors:', errorMessages);
+                alert('Error:\n' + errorMessages.join('\n'));
+                e.preventDefault(); // Prevent form submission
+                return false;
+            }
+
+            // Show loading state
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Memproses...';
+            }
+
+            console.log('Form validation passed, submitting...');
         });
     }
-
-    fileInputs.forEach(function(input) {
-        input.addEventListener('change', function() {
-            const file = this.files[0];
-            if (file) {
-                // Show file name
-                const fileName = file.name;
-                const fileSize = (file.size / 1024 / 1024).toFixed(2); // MB
-
-                // Create or update file info display
-                let fileInfo = this.parentNode.querySelector('.file-info');
-                if (!fileInfo) {
-                    fileInfo = document.createElement('div');
-                    fileInfo.className = 'file-info mt-2 text-sm text-gray-600 dark:text-gray-400';
-                    this.parentNode.appendChild(fileInfo);
-                }
-
-                fileInfo.innerHTML = `
-                    <div class="flex items-center">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        <span>${fileName} (${fileSize} MB)</span>
-                    </div>
-                `;
-            }
-        });
-    });
 });
 </script>

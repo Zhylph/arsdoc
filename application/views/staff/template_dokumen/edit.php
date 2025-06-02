@@ -110,7 +110,7 @@
                         <label for="max_ukuran_file" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                             Maksimal Ukuran File (MB) <span class="text-red-500">*</span>
                         </label>
-                        <input type="number" id="max_ukuran_file" name="max_ukuran_file" value="<?php echo set_value('max_ukuran_file', $template['max_ukuran_file']); ?>"
+                        <input type="number" id="max_ukuran_file" name="max_ukuran_file" value="<?php echo set_value('max_ukuran_file', round($template['max_ukuran_file'] / 1024 / 1024, 1)); ?>"
                                min="1" max="10" step="0.1" required
                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                         <?php echo form_error('max_ukuran_file', '<p class="mt-2 text-sm text-red-600 dark:text-red-500">', '</p>'); ?>

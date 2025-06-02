@@ -116,7 +116,7 @@
                     <div class="space-y-4">
                         <div>
                             <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Maksimal Ukuran</h4>
-                            <p class="text-sm text-gray-900 dark:text-white"><?php echo $template['max_ukuran_file']; ?> MB</p>
+                            <p class="text-sm text-gray-900 dark:text-white"><?php echo round($template['max_ukuran_file'] / 1024 / 1024, 1); ?> MB</p>
                         </div>
 
                         <div>

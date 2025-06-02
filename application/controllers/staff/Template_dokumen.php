@@ -227,12 +227,15 @@ class Template_dokumen extends CI_Controller {
         } else {
             // Data template
             $tipe_file = $this->input->post('tipe_file_diizinkan');
+            $max_ukuran_mb = $this->input->post('max_ukuran_file');
+            $max_ukuran_bytes = $max_ukuran_mb * 1024 * 1024; // Konversi MB ke bytes
+
             $data_template = array(
                 'id_jenis' => $this->input->post('id_jenis'),
                 'nama_template' => $this->input->post('nama_template'),
                 'deskripsi' => $this->input->post('deskripsi'),
                 'instruksi_upload' => $this->input->post('instruksi_upload'),
-                'max_ukuran_file' => $this->input->post('max_ukuran_file'),
+                'max_ukuran_file' => $max_ukuran_bytes,
                 'tipe_file_diizinkan' => is_array($tipe_file) ? implode(',', $tipe_file) : '',
                 'status' => $this->input->post('status'),
                 'dibuat_oleh' => $this->session->userdata('id_pengguna')
@@ -285,12 +288,15 @@ class Template_dokumen extends CI_Controller {
         } else {
             // Data template
             $tipe_file = $this->input->post('tipe_file_diizinkan');
+            $max_ukuran_mb = $this->input->post('max_ukuran_file');
+            $max_ukuran_bytes = $max_ukuran_mb * 1024 * 1024; // Konversi MB ke bytes
+
             $data_template = array(
                 'id_jenis' => $this->input->post('id_jenis'),
                 'nama_template' => $this->input->post('nama_template'),
                 'deskripsi' => $this->input->post('deskripsi'),
                 'instruksi_upload' => $this->input->post('instruksi_upload'),
-                'max_ukuran_file' => $this->input->post('max_ukuran_file'),
+                'max_ukuran_file' => $max_ukuran_bytes,
                 'tipe_file_diizinkan' => is_array($tipe_file) ? implode(',', $tipe_file) : '',
                 'status' => $this->input->post('status')
             );

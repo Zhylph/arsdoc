@@ -18,7 +18,7 @@ class Model_submission extends CI_Model {
      * Mendapatkan semua data submission dengan pagination dan filter
      */
     public function ambil_semua_submission($filter = array(), $limit = null, $offset = null) {
-        $this->db->select('sd.*, td.nama_template, jd.nama_jenis, p.nama_lengkap as nama_pengguna, ps.nama_lengkap as nama_staff');
+        $this->db->select('sd.*, td.nama_template, jd.nama_jenis, p.nama_lengkap as nama_pengguna, p.email as email_pengguna, ps.nama_lengkap as nama_staff');
         $this->db->from($this->tabel_submission . ' sd');
         $this->db->join('template_dokumen td', 'sd.id_template = td.id_template', 'left');
         $this->db->join('jenis_dokumen jd', 'td.id_jenis = jd.id_jenis', 'left');
