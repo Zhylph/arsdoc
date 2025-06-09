@@ -71,7 +71,7 @@
             </button>
             <button type="button" onclick="testDebugJson()" class="text-white bg-indigo-700 hover:bg-indigo-800 focus:ring-4 focus:ring-indigo-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-indigo-600 dark:hover:bg-indigo-700 focus:outline-none dark:focus:ring-indigo-800">
                 <i class="fas fa-code mr-2"></i>Test JSON
-            </button> --> -->
+            </button> -->
         </div>
     </div>
 
@@ -428,7 +428,7 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Upload Form
+    
     document.getElementById('uploadForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -479,7 +479,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Folder Form
+    
     document.getElementById('folderForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -487,7 +487,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const originalText = submitBtn.innerHTML;
         const formData = new FormData(this);
 
-        // Validasi client-side
+        
         const namaFolder = formData.get('nama_folder');
         if (!namaFolder || namaFolder.trim() === '') {
             Swal.fire({
@@ -498,7 +498,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Debug: tampilkan data yang akan dikirim
+        
         console.log('Data yang akan dikirim:');
         for (let pair of formData.entries()) {
             console.log(pair[0] + ': ' + pair[1]);
@@ -522,7 +522,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 throw new Error('Network response was not ok');
             }
 
-            // Ambil response sebagai text dulu untuk debugging
+            
             return response.text().then(text => {
                 console.log('Raw response:', text);
                 try {
@@ -568,7 +568,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Rename Form
+    
     document.getElementById('renameForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -619,20 +619,20 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// Rename function
+
 function renameItem(type, id, currentName) {
     document.getElementById('rename_type').value = type;
     document.getElementById('rename_id').value = id;
     document.getElementById('nama_baru').value = currentName;
     document.getElementById('renameModalLabel').textContent = 'Rename ' + (type === 'file' ? 'File' : 'Folder');
 
-    // Show modal using Flowbite
+    
     const renameModal = document.getElementById('renameModal');
     renameModal.classList.remove('hidden');
     renameModal.classList.add('flex');
 }
 
-// Delete file function
+
 function deleteFile(id) {
     Swal.fire({
         title: 'Hapus File?',
@@ -686,7 +686,7 @@ function deleteFile(id) {
     });
 }
 
-// Delete folder function
+
 function deleteFolder(id) {
     Swal.fire({
         title: 'Hapus Folder?',
@@ -740,7 +740,7 @@ function deleteFolder(id) {
     });
 }
 
-// Test AJAX function
+
 function testAjax() {
     console.log('Testing AJAX...');
 
@@ -780,7 +780,7 @@ function testAjax() {
     });
 }
 
-// Test Simple Folder function
+
 function testSimpleFolder() {
     console.log('Testing Simple Folder Creation...');
 
@@ -800,7 +800,7 @@ function testSimpleFolder() {
         console.log('Response status:', response.status);
         console.log('Response headers:', response.headers.get('content-type'));
 
-        // Ambil response sebagai text dulu untuk debugging
+        
         return response.text().then(text => {
             console.log('Raw response:', text);
             try {
@@ -834,7 +834,7 @@ function testSimpleFolder() {
     });
 }
 
-// Test No Log Folder function
+
 function testNoLogFolder() {
     console.log('Testing No Log Folder Creation...');
 
@@ -854,7 +854,7 @@ function testNoLogFolder() {
         console.log('Response status:', response.status);
         console.log('Response headers:', response.headers.get('content-type'));
 
-        // Ambil response sebagai text dulu untuk debugging
+        
         return response.text().then(text => {
             console.log('Raw response:', text);
             try {
@@ -888,7 +888,7 @@ function testNoLogFolder() {
     });
 }
 
-// Test Debug JSON Response
+
 function testDebugJson() {
     console.log('Testing Debug JSON Response...');
 

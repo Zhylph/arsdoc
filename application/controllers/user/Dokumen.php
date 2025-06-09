@@ -10,7 +10,7 @@ class Dokumen extends CI_Controller {
     public function __construct() {
         parent::__construct();
 
-        // Cek apakah user sudah login dan memiliki role user
+        
         if (!$this->session->userdata('logged_in')) {
             redirect('autentikasi/login');
         }
@@ -39,26 +39,26 @@ class Dokumen extends CI_Controller {
             )
         );
 
-        // Konfigurasi pagination
+        
         $config['base_url'] = base_url('user/dokumen/index');
         $filter = $this->_get_filter();
-        $filter['status'] = 'aktif'; // Hanya tampilkan template aktif
+        $filter['status'] = 'aktif'; 
         $config['total_rows'] = $this->Model_template_dokumen->hitung_total_template($filter);
         $config['per_page'] = 12;
         $config['uri_segment'] = 4;
 
-        // Styling pagination dengan Flowbite
+        
         $this->_setup_pagination($config);
 
         $offset = $this->uri->segment(4) ? $this->uri->segment(4) : 0;
 
-        // Ambil data template dokumen
+        
         $data['templates'] = $this->Model_template_dokumen->ambil_semua_template($filter, $config['per_page'], $offset);
         $data['pagination'] = $this->pagination->create_links();
         $data['filter'] = $filter;
         $data['total_rows'] = $config['total_rows'];
 
-        // Data untuk dropdown filter
+        
         $data['jenis_dokumen'] = $this->Model_jenis_dokumen->ambil_jenis_aktif();
 
         $this->load->view('template/header', $data);
@@ -91,10 +91,10 @@ class Dokumen extends CI_Controller {
             'template' => $template
         );
 
-        // Ambil field template
+        
         $data['field_template'] = $this->Model_template_dokumen->ambil_field_by_template($id_template);
 
-        // Cek apakah user sudah pernah submit template ini
+        
         $data['submission_user'] = $this->Model_submission->ambil_semua_submission(array(
             'id_template' => $id_template,
             'id_pengguna' => $this->session->userdata('id_pengguna')
@@ -119,10 +119,10 @@ class Dokumen extends CI_Controller {
             )
         );
 
-        // Konfigurasi pagination
+        
         $config['base_url'] = base_url('user/dokumen/submission');
         $filter = $this->_get_filter();
-        $filter['id_pengguna'] = $this->session->userdata('id_pengguna'); // Hanya submission user ini
+        $filter['id_pengguna'] = $this->session->userdata('id_pengguna'); 
         $config['total_rows'] = $this->Model_submission->hitung_total_submission($filter);
         $config['per_page'] = 10;
         $config['uri_segment'] = 4;
@@ -131,13 +131,13 @@ class Dokumen extends CI_Controller {
 
         $offset = $this->uri->segment(4) ? $this->uri->segment(4) : 0;
 
-        // Ambil data submission user
+        
         $data['submission'] = $this->Model_submission->ambil_semua_submission($filter, $config['per_page'], $offset);
         $data['pagination'] = $this->pagination->create_links();
         $data['filter'] = $filter;
         $data['total_rows'] = $config['total_rows'];
 
-        // Statistik submission user
+        
         $data['statistik'] = array(
             'total' => $this->Model_submission->hitung_total_submission(array('id_pengguna' => $this->session->userdata('id_pengguna'))),
             'pending' => $this->Model_submission->hitung_total_submission(array('id_pengguna' => $this->session->userdata('id_pengguna'), 'status' => 'pending')),
@@ -146,7 +146,7 @@ class Dokumen extends CI_Controller {
             'ditolak' => $this->Model_submission->hitung_total_submission(array('id_pengguna' => $this->session->userdata('id_pengguna'), 'status' => 'ditolak'))
         );
 
-        // Data untuk dropdown filter
+        
         $data['template_list'] = $this->Model_template_dokumen->ambil_template_aktif();
 
         $this->load->view('template/header', $data);
@@ -179,10 +179,10 @@ class Dokumen extends CI_Controller {
             'submission' => $submission
         );
 
-        // Ambil data field submission
+        
         $data['data_submission'] = $this->Model_submission->ambil_data_submission($id_submission);
 
-        // Ambil field template untuk referensi
+        
         $data['field_template'] = $this->Model_template_dokumen->ambil_field_by_template($submission['id_template']);
 
         $this->load->view('template/header', $data);
@@ -212,13 +212,13 @@ class Dokumen extends CI_Controller {
             return;
         }
 
-        // Hanya bisa hapus jika status pending
+        
         if ($submission['status'] !== 'pending') {
             echo json_encode(array('success' => false, 'message' => 'Submission yang sudah diproses tidak dapat dihapus.'));
             return;
         }
 
-        // Hapus file yang diupload
+        
         $data_submission = $this->Model_submission->ambil_data_submission($id_submission);
         foreach ($data_submission as $data) {
             if ($data['tipe_field'] === 'file' && !empty($data['value'])) {
@@ -230,7 +230,7 @@ class Dokumen extends CI_Controller {
         }
 
         if ($this->Model_submission->hapus_submission($id_submission)) {
-            // Log aktivitas
+            
             $this->Model_log_aktivitas->tambah_log(
                 $this->session->userdata('id_pengguna'),
                 'Menghapus submission',
@@ -272,14 +272,14 @@ class Dokumen extends CI_Controller {
             show_404();
         }
 
-        // Log aktivitas
+        
         $this->Model_log_aktivitas->tambah_log(
             $this->session->userdata('id_pengguna'),
             'Download file submission',
             "Download file {$field_name} dari submission {$submission['nomor_submission']}"
         );
 
-        // Force download
+        
         $this->load->helper('download');
         force_download($file_data['value'], file_get_contents($file_path));
     }
@@ -297,7 +297,7 @@ class Dokumen extends CI_Controller {
             show_404();
         }
 
-        // Hanya bisa edit jika status pending
+        
         if ($submission['status'] !== 'pending') {
             $this->session->set_flashdata('error_message', 'Submission ini tidak dapat diedit karena sudah diproses.');
             redirect('user/dokumen/detail_submission/' . $id_submission);
@@ -321,7 +321,7 @@ class Dokumen extends CI_Controller {
             'submission' => $submission
         );
 
-        // Ambil field template dan data submission
+        
         $data['field_template'] = $this->Model_template_dokumen->ambil_field_by_template($submission['id_template']);
         $data['data_submission'] = $this->Model_submission->ambil_data_submission($id_submission);
 
@@ -448,7 +448,7 @@ class Dokumen extends CI_Controller {
             );
         }
 
-        // Set pesan error dalam bahasa Indonesia
+        
         $this->form_validation->set_message('required', '{field} harus diisi.');
         $this->form_validation->set_message('max_length', '{field} maksimal {param} karakter.');
         $this->form_validation->set_message('numeric', '{field} harus berupa angka.');
@@ -463,7 +463,7 @@ class Dokumen extends CI_Controller {
     private function _update_submission($id_submission, $template, $field_template) {
         $this->load->library('upload');
 
-        // Hapus data submission lama
+        
         $this->Model_submission->hapus_data_submission($id_submission);
 
         $data_fields = array();
@@ -473,7 +473,7 @@ class Dokumen extends CI_Controller {
             $field_name = 'field_' . $field['id_field'];
 
             if ($field['tipe_field'] === 'file') {
-                // Handle file upload
+                
                 if (!empty($_FILES[$field_name]['name'])) {
                     $upload_result = $this->_upload_file($field_name, $template);
                     if ($upload_result['success']) {
@@ -485,7 +485,7 @@ class Dokumen extends CI_Controller {
                             'value' => $upload_result['file_name']
                         );
                     } else {
-                        // Hapus file yang sudah diupload jika ada error
+                        
                         foreach ($uploaded_files as $file) {
                             $file_path = './uploads/dokumen/' . $file;
                             if (file_exists($file_path)) {
@@ -495,7 +495,7 @@ class Dokumen extends CI_Controller {
                         return array('success' => false, 'message' => $upload_result['message']);
                     }
                 } else {
-                    // Gunakan file lama jika tidak ada file baru
+                    
                     $old_data = $this->Model_submission->ambil_data_submission_by_field($id_submission, $field['id_field']);
                     if ($old_data) {
                         $data_fields[] = array(
@@ -507,7 +507,7 @@ class Dokumen extends CI_Controller {
                     }
                 }
             } else {
-                // Handle non-file fields
+                
                 $value = $this->input->post($field_name);
                 $data_fields[] = array(
                     'id_field' => $field['id_field'],
@@ -518,14 +518,14 @@ class Dokumen extends CI_Controller {
             }
         }
 
-        // Update data submission
+        
         if ($this->Model_submission->tambah_data_submission($id_submission, $data_fields)) {
-            // Update tanggal submission
+            
             $this->Model_submission->update_submission($id_submission, array(
                 'tanggal_submission' => date('Y-m-d H:i:s')
             ));
 
-            // Log aktivitas
+            
             $this->Model_log_aktivitas->tambah_log(
                 $this->session->userdata('id_pengguna'),
                 'Memperbarui submission',
@@ -534,7 +534,7 @@ class Dokumen extends CI_Controller {
 
             return array('success' => true, 'id_submission' => $id_submission);
         } else {
-            // Hapus file yang sudah diupload jika gagal
+            
             foreach ($uploaded_files as $file) {
                 $file_path = './uploads/dokumen/' . $file;
                 if (file_exists($file_path)) {
@@ -551,10 +551,10 @@ class Dokumen extends CI_Controller {
     private function _upload_file($field_name, $template) {
         $config['upload_path'] = './uploads/dokumen/';
         $config['allowed_types'] = str_replace(',', '|', $template['tipe_file_diizinkan']);
-        $config['max_size'] = $template['max_ukuran_file'] * 1024; // Convert MB to KB
+        $config['max_size'] = $template['max_ukuran_file'] * 1024; 
         $config['encrypt_name'] = TRUE;
 
-        // Buat direktori jika belum ada
+        
         if (!is_dir($config['upload_path'])) {
             mkdir($config['upload_path'], 0755, true);
         }

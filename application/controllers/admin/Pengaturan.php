@@ -10,7 +10,7 @@ class Pengaturan extends CI_Controller {
     public function __construct() {
         parent::__construct();
         
-        // Cek apakah user sudah login dan memiliki role admin
+        
         if (!$this->session->userdata('logged_in')) {
             redirect('autentikasi/login');
         }
@@ -39,10 +39,10 @@ class Pengaturan extends CI_Controller {
             )
         );
 
-        // Ambil semua pengaturan
+        
         $data['pengaturan'] = $this->Model_pengaturan->ambil_semua_pengaturan();
         
-        // Kelompokkan pengaturan berdasarkan kategori
+        
         $data['pengaturan_grouped'] = array();
         foreach ($data['pengaturan'] as $setting) {
             $data['pengaturan_grouped'][$setting['kategori']][] = $setting;
@@ -67,12 +67,12 @@ class Pengaturan extends CI_Controller {
         $gagal_update = 0;
 
         foreach ($pengaturan_data as $key => $value) {
-            // Skip CSRF token dan tombol submit
+            
             if (in_array($key, array('csrf_token', 'submit'))) {
                 continue;
             }
 
-            // Validasi khusus untuk beberapa pengaturan
+            
             if (!$this->_validasi_pengaturan($key, $value)) {
                 $gagal_update++;
                 continue;
@@ -85,7 +85,7 @@ class Pengaturan extends CI_Controller {
             }
         }
 
-        // Log aktivitas
+        
         $this->Model_log_aktivitas->tambah_log(
             $this->session->userdata('id_pengguna'),
             'Mengupdate pengaturan sistem',
@@ -112,7 +112,7 @@ class Pengaturan extends CI_Controller {
         $kategori = $this->input->post('kategori');
         
         if ($this->Model_pengaturan->reset_pengaturan($kategori)) {
-            // Log aktivitas
+            
             $this->Model_log_aktivitas->tambah_log(
                 $this->session->userdata('id_pengguna'),
                 'Reset pengaturan sistem',
@@ -137,14 +137,14 @@ class Pengaturan extends CI_Controller {
             'pengaturan' => $pengaturan
         );
 
-        // Set header untuk download JSON
+        
         header('Content-Type: application/json');
         header('Content-Disposition: attachment;filename="backup_pengaturan_' . date('Y-m-d_H-i-s') . '.json"');
         header('Cache-Control: max-age=0');
 
         echo json_encode($backup_data, JSON_PRETTY_PRINT);
 
-        // Log aktivitas
+        
         $this->Model_log_aktivitas->tambah_log(
             $this->session->userdata('id_pengguna'),
             'Backup pengaturan sistem',
@@ -190,10 +190,10 @@ class Pengaturan extends CI_Controller {
             )
         );
 
-        // Ambil informasi sistem
+        
         $data['sistem_info'] = $this->_ambil_informasi_sistem();
         
-        // Ambil statistik database
+        
         $data['database_info'] = $this->_ambil_informasi_database();
 
         $this->load->view('template/header', $data);
@@ -237,7 +237,7 @@ class Pengaturan extends CI_Controller {
         }
 
         if ($result) {
-            // Log aktivitas
+            
             $this->Model_log_aktivitas->tambah_log(
                 $this->session->userdata('id_pengguna'),
                 'Maintenance sistem',
@@ -254,10 +254,10 @@ class Pengaturan extends CI_Controller {
     private function _validasi_pengaturan($key, $value) {
         switch ($key) {
             case 'max_upload_size':
-                return is_numeric($value) && $value > 0 && $value <= 100; // Max 100MB
+                return is_numeric($value) && $value > 0 && $value <= 100; 
                 
             case 'session_timeout':
-                return is_numeric($value) && $value >= 300 && $value <= 86400; // 5 menit - 24 jam
+                return is_numeric($value) && $value >= 300 && $value <= 86400; 
                 
             case 'pagination_limit':
                 return is_numeric($value) && $value >= 5 && $value <= 100;
@@ -269,7 +269,7 @@ class Pengaturan extends CI_Controller {
                 return is_numeric($value) && $value >= 1 && $value <= 365;
                 
             default:
-                return true; // Validasi default
+                return true; 
         }
     }
 
@@ -279,7 +279,7 @@ class Pengaturan extends CI_Controller {
     private function _proses_restore() {
         $config['upload_path'] = './uploads/temp/';
         $config['allowed_types'] = 'json';
-        $config['max_size'] = 2048; // 2MB
+        $config['max_size'] = 2048; 
         $config['encrypt_name'] = TRUE;
 
         $this->load->library('upload', $config);
@@ -292,7 +292,7 @@ class Pengaturan extends CI_Controller {
         $upload_data = $this->upload->data();
         $file_path = $upload_data['full_path'];
 
-        // Baca file JSON
+        
         $json_content = file_get_contents($file_path);
         $backup_data = json_decode($json_content, true);
 
@@ -302,7 +302,7 @@ class Pengaturan extends CI_Controller {
             return;
         }
 
-        // Restore pengaturan
+        
         $berhasil = 0;
         $gagal = 0;
 
@@ -314,10 +314,10 @@ class Pengaturan extends CI_Controller {
             }
         }
 
-        // Hapus file temporary
+        
         unlink($file_path);
 
-        // Log aktivitas
+        
         $this->Model_log_aktivitas->tambah_log(
             $this->session->userdata('id_pengguna'),
             'Restore pengaturan sistem',

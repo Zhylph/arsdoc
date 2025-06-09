@@ -10,7 +10,7 @@ class Dashboard extends CI_Controller {
     public function __construct() {
         parent::__construct();
         
-        // Cek apakah user sudah login dan memiliki role user
+        
         if (!$this->session->userdata('logged_in')) {
             redirect('autentikasi/login');
         }
@@ -32,19 +32,19 @@ class Dashboard extends CI_Controller {
             )
         );
 
-        // Ambil statistik untuk dashboard
+        
         $data['statistik'] = $this->_ambil_statistik_dashboard();
         
-        // Ambil submission terbaru user
+        
         $data['submission_terbaru'] = $this->_ambil_submission_terbaru();
         
-        // Ambil template dokumen yang tersedia
+        
         $data['template_tersedia'] = $this->_ambil_template_tersedia();
         
-        // Ambil file pribadi terbaru
+        
         $data['file_pribadi_terbaru'] = $this->_ambil_file_pribadi_terbaru();
 
-        // Load views
+        
         $this->load->view('template/header', $data);
         $this->load->view('template/sidebar', $data);
         $this->load->view('user/dashboard', $data);
@@ -58,11 +58,11 @@ class Dashboard extends CI_Controller {
         $statistik = array();
         $id_user = $this->session->userdata('id_pengguna');
 
-        // Hitung submission user
+        
         $this->db->where('id_pengguna', $id_user);
         $statistik['total_submission'] = $this->db->count_all_results('submission_dokumen');
 
-        // Hitung submission berdasarkan status
+        
         $this->db->where('id_pengguna', $id_user);
         $this->db->where('status', 'pending');
         $statistik['submission_pending'] = $this->db->count_all_results('submission_dokumen');
@@ -79,18 +79,18 @@ class Dashboard extends CI_Controller {
         $this->db->where('status', 'ditolak');
         $statistik['submission_ditolak'] = $this->db->count_all_results('submission_dokumen');
 
-        // Hitung file pribadi
+        
         $this->db->where('id_pengguna', $id_user);
         $statistik['total_file_pribadi'] = $this->db->count_all_results('file_pribadi');
 
-        // Hitung ukuran total file pribadi (dalam MB)
+        
         $this->db->select_sum('ukuran_file');
         $this->db->where('id_pengguna', $id_user);
         $query = $this->db->get('file_pribadi');
         $ukuran_total = $query->row()->ukuran_file ?: 0;
-        $statistik['ukuran_file_pribadi'] = round($ukuran_total / 1048576, 2); // Convert to MB
+        $statistik['ukuran_file_pribadi'] = round($ukuran_total / 1048576, 2); 
 
-        // Hitung template dokumen yang tersedia
+        
         $this->db->where('status', 'aktif');
         $statistik['template_tersedia'] = $this->db->count_all_results('template_dokumen');
 

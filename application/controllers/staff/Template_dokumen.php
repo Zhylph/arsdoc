@@ -10,7 +10,7 @@ class Template_dokumen extends CI_Controller {
     public function __construct() {
         parent::__construct();
 
-        // Cek apakah user sudah login dan memiliki role staff
+        
         if (!$this->session->userdata('logged_in')) {
             redirect('autentikasi/login');
         }
@@ -38,12 +38,12 @@ class Template_dokumen extends CI_Controller {
             )
         );
 
-        // Pagination setup
+        
         $per_page = 10;
         $page = $this->input->get('page') ? $this->input->get('page') : 1;
         $offset = ($page - 1) * $per_page;
 
-        // Filter setup
+        
         $filter = array();
         if ($this->input->get('status')) {
             $filter['status'] = $this->input->get('status');
@@ -55,11 +55,11 @@ class Template_dokumen extends CI_Controller {
             $filter['pencarian'] = $this->input->get('pencarian');
         }
 
-        // Ambil data
+        
         $data['template_dokumen'] = $this->Model_template_dokumen->ambil_semua_template($filter, $per_page, $offset);
         $total_rows = $this->Model_template_dokumen->hitung_semua_template($filter);
 
-        // Setup pagination
+        
         $config['base_url'] = site_url('staff/template_dokumen');
         $config['total_rows'] = $total_rows;
         $config['per_page'] = $per_page;
@@ -67,7 +67,7 @@ class Template_dokumen extends CI_Controller {
         $config['query_string_segment'] = 'page';
         $config['use_page_numbers'] = TRUE;
 
-        // Pagination styling (sama seperti jenis dokumen)
+        
         $config['full_tag_open'] = '<nav><ul class="flex items-center -space-x-px h-8 text-sm">';
         $config['full_tag_close'] = '</ul></nav>';
         $config['first_link'] = 'Pertama';
@@ -94,10 +94,10 @@ class Template_dokumen extends CI_Controller {
         $data['current_page'] = $page;
         $data['per_page'] = $per_page;
 
-        // Data untuk filter
+        
         $data['jenis_dokumen'] = $this->Model_jenis_dokumen->ambil_jenis_dokumen_aktif();
 
-        // Load views
+        
         $this->load->view('template/header', $data);
         $this->load->view('template/sidebar', $data);
         $this->load->view('staff/template_dokumen/index', $data);
@@ -118,10 +118,10 @@ class Template_dokumen extends CI_Controller {
             )
         );
 
-        // Ambil jenis dokumen untuk dropdown
+        
         $data['jenis_dokumen'] = $this->Model_jenis_dokumen->ambil_jenis_dokumen_aktif();
 
-        // Pre-select jenis jika ada parameter
+        
         $data['selected_jenis'] = $this->input->get('jenis');
 
         if ($this->input->post()) {
@@ -213,7 +213,7 @@ class Template_dokumen extends CI_Controller {
         $this->form_validation->set_rules('max_ukuran_file', 'Maksimal Ukuran File', 'required|numeric|greater_than[0]|less_than_equal_to[10]');
         $this->form_validation->set_rules('status', 'Status', 'required|in_list[aktif,nonaktif]');
 
-        // Validasi nama template unik dalam jenis yang sama
+        
         $id_jenis = $this->input->post('id_jenis');
         $nama_template = $this->input->post('nama_template');
         if ($id_jenis && $nama_template) {
@@ -225,10 +225,10 @@ class Template_dokumen extends CI_Controller {
         if ($this->form_validation->run() == FALSE) {
             $this->tambah();
         } else {
-            // Data template
+            
             $tipe_file = $this->input->post('tipe_file_diizinkan');
             $max_ukuran_mb = $this->input->post('max_ukuran_file');
-            $max_ukuran_bytes = $max_ukuran_mb * 1024 * 1024; // Konversi MB ke bytes
+            $max_ukuran_bytes = $max_ukuran_mb * 1024 * 1024; 
 
             $data_template = array(
                 'id_jenis' => $this->input->post('id_jenis'),
@@ -241,13 +241,13 @@ class Template_dokumen extends CI_Controller {
                 'dibuat_oleh' => $this->session->userdata('id_pengguna')
             );
 
-            // Data fields
+            
             $data_fields = $this->_proses_fields();
 
             $id_template = $this->Model_template_dokumen->tambah_template($data_template, $data_fields);
 
             if ($id_template) {
-                // Catat aktivitas
+                
                 $this->Model_template_dokumen->catat_aktivitas(
                     'Menambah template dokumen baru',
                     'Template: ' . $data_template['nama_template'],
@@ -274,7 +274,7 @@ class Template_dokumen extends CI_Controller {
         $this->form_validation->set_rules('max_ukuran_file', 'Maksimal Ukuran File', 'required|numeric|greater_than[0]|less_than_equal_to[10]');
         $this->form_validation->set_rules('status', 'Status', 'required|in_list[aktif,nonaktif]');
 
-        // Validasi nama template unik dalam jenis yang sama
+        
         $id_jenis = $this->input->post('id_jenis');
         $nama_template = $this->input->post('nama_template');
         if ($id_jenis && $nama_template) {
@@ -286,10 +286,10 @@ class Template_dokumen extends CI_Controller {
         if ($this->form_validation->run() == FALSE) {
             $this->edit($id_template);
         } else {
-            // Data template
+            
             $tipe_file = $this->input->post('tipe_file_diizinkan');
             $max_ukuran_mb = $this->input->post('max_ukuran_file');
-            $max_ukuran_bytes = $max_ukuran_mb * 1024 * 1024; // Konversi MB ke bytes
+            $max_ukuran_bytes = $max_ukuran_mb * 1024 * 1024; 
 
             $data_template = array(
                 'id_jenis' => $this->input->post('id_jenis'),
@@ -301,11 +301,11 @@ class Template_dokumen extends CI_Controller {
                 'status' => $this->input->post('status')
             );
 
-            // Data fields
+            
             $data_fields = $this->_proses_fields();
 
             if ($this->Model_template_dokumen->update_template($id_template, $data_template, $data_fields)) {
-                // Catat aktivitas
+                
                 $this->Model_template_dokumen->catat_aktivitas(
                     'Mengupdate template dokumen',
                     'Template: ' . $data_template['nama_template'],
@@ -331,7 +331,7 @@ class Template_dokumen extends CI_Controller {
         if ($fields_data && is_array($fields_data)) {
             foreach ($fields_data as $index => $field_data) {
                 if (!empty($field_data['nama_field'])) {
-                    // Map wajib_diisi to boolean for database compatibility
+                    
                     $wajib_diisi = ($field_data['wajib_diisi'] === 'ya') ? 1 : 0;
 
                     $fields[] = array(
@@ -340,8 +340,8 @@ class Template_dokumen extends CI_Controller {
                         'wajib_diisi' => $wajib_diisi,
                         'placeholder' => $field_data['placeholder'] ?? '',
                         'urutan' => $field_data['urutan'] ?? $index
-                        // Note: opsi field removed as it doesn't exist in current database schema
-                        // Options can be stored in placeholder or validasi field if needed
+                        
+                        
                     );
                 }
             }
@@ -367,7 +367,7 @@ class Template_dokumen extends CI_Controller {
         }
 
         if ($this->Model_template_dokumen->hapus_template($id_template)) {
-            // Catat aktivitas
+            
             $this->Model_template_dokumen->catat_aktivitas(
                 'Menghapus template dokumen',
                 'Template: ' . $template['nama_template'],
@@ -398,7 +398,7 @@ class Template_dokumen extends CI_Controller {
         }
 
         if ($this->Model_template_dokumen->ubah_status_template($id_template, $status)) {
-            // Catat aktivitas
+            
             $this->Model_template_dokumen->catat_aktivitas(
                 'Mengubah status template dokumen',
                 'Template: ' . $template['nama_template'] . ' menjadi ' . $status,
@@ -428,7 +428,7 @@ class Template_dokumen extends CI_Controller {
             return;
         }
 
-        // Cek nama template baru
+        
         if (!$this->Model_template_dokumen->cek_nama_template_tersedia($nama_baru, $template['id_jenis'])) {
             echo json_encode(array('success' => false, 'message' => 'Nama template sudah digunakan dalam jenis dokumen yang sama.'));
             return;
@@ -437,7 +437,7 @@ class Template_dokumen extends CI_Controller {
         $id_template_baru = $this->Model_template_dokumen->duplikasi_template($id_template, $nama_baru, $this->session->userdata('id_pengguna'));
 
         if ($id_template_baru) {
-            // Catat aktivitas
+            
             $this->Model_template_dokumen->catat_aktivitas(
                 'Menduplikasi template dokumen',
                 'Template asli: ' . $template['nama_template'] . ', Template baru: ' . $nama_baru,

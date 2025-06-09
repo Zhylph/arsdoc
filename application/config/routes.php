@@ -69,3 +69,4 @@ $route['staff/dashboard'] = 'staff/dashboard';
 // Routes untuk user
 $route['user'] = 'user/dashboard';
 $route['user/dashboard'] = 'user/dashboard';
+$route['user/submission/buat/(:num)'] = 'user/submission/buat/$1';

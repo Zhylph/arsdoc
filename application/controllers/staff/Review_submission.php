@@ -10,7 +10,7 @@ class Review_submission extends CI_Controller {
     public function __construct() {
         parent::__construct();
         
-        // Cek apakah user sudah login dan memiliki role staff
+        
         if (!$this->session->userdata('logged_in')) {
             redirect('autentikasi/login');
         }
@@ -41,25 +41,25 @@ class Review_submission extends CI_Controller {
             )
         );
 
-        // Konfigurasi pagination
+        
         $config['base_url'] = base_url('staff/review_submission/index');
         $filter = $this->_get_filter();
         $config['total_rows'] = $this->Model_submission->hitung_total_submission($filter);
         $config['per_page'] = 15;
         $config['uri_segment'] = 4;
         
-        // Styling pagination dengan Flowbite
+        
         $this->_setup_pagination($config);
         
         $offset = $this->uri->segment(4) ? $this->uri->segment(4) : 0;
         
-        // Ambil data submission
+        
         $data['submission'] = $this->Model_submission->ambil_semua_submission($filter, $config['per_page'], $offset);
         $data['pagination'] = $this->pagination->create_links();
         $data['filter'] = $filter;
         $data['total_rows'] = $config['total_rows'];
         
-        // Statistik submission
+        
         $data['statistik'] = array(
             'pending' => $this->Model_submission->hitung_submission_by_status('pending'),
             'diproses' => $this->Model_submission->hitung_submission_by_status('diproses'),
@@ -68,7 +68,7 @@ class Review_submission extends CI_Controller {
             'saya_proses' => $this->Model_submission->hitung_total_submission(array('diproses_oleh' => $this->session->userdata('id_pengguna')))
         );
         
-        // Data untuk dropdown filter
+        
         $data['template_list'] = $this->Model_template_dokumen->ambil_template_aktif();
 
         $this->load->view('template/header', $data);
@@ -101,10 +101,10 @@ class Review_submission extends CI_Controller {
             'submission' => $submission
         );
 
-        // Ambil data field submission
+        
         $data['data_submission'] = $this->Model_submission->ambil_data_submission($id_submission);
         
-        // Ambil field template untuk referensi
+        
         $data['field_template'] = $this->Model_template_dokumen->ambil_field_by_template($submission['id_template']);
 
         $this->load->view('template/header', $data);
@@ -126,7 +126,7 @@ class Review_submission extends CI_Controller {
             show_404();
         }
 
-        // Cek apakah submission masih bisa diproses
+        
         if (!in_array($submission['status'], array('pending', 'diproses'))) {
             $this->session->set_flashdata('error', 'Submission ini sudah tidak dapat diproses lagi.');
             redirect('staff/review_submission/detail/' . $id_submission);
@@ -159,14 +159,14 @@ class Review_submission extends CI_Controller {
                 );
 
                 if ($this->Model_submission->update_submission($id_submission, $data_update)) {
-                    // Log aktivitas
+                    
                     $this->Model_log_aktivitas->tambah_log(
                         $this->session->userdata('id_pengguna'),
                         'Memproses submission',
                         "Submission {$submission['nomor_submission']} diubah status menjadi $status_baru"
                     );
                     
-                    // Kirim notifikasi email ke user (opsional)
+                    
                     $this->_kirim_notifikasi_email($submission, $status_baru, $catatan);
                     
                     $this->session->set_flashdata('success', 'Submission berhasil diproses.');
@@ -177,7 +177,7 @@ class Review_submission extends CI_Controller {
             }
         }
 
-        // Ambil data field submission untuk ditampilkan
+        
         $data['data_submission'] = $this->Model_submission->ambil_data_submission($id_submission);
         $data['field_template'] = $this->Model_template_dokumen->ambil_field_by_template($submission['id_template']);
 
@@ -208,13 +208,13 @@ class Review_submission extends CI_Controller {
             return;
         }
 
-        // Cek apakah submission masih pending
+        
         if ($submission['status'] !== 'pending') {
             echo json_encode(array('success' => false, 'message' => 'Submission ini sudah tidak dapat diambil.'));
             return;
         }
 
-        // Update status menjadi diproses
+        
         $data_update = array(
             'status' => 'diproses',
             'diproses_oleh' => $this->session->userdata('id_pengguna'),
@@ -222,7 +222,7 @@ class Review_submission extends CI_Controller {
         );
 
         if ($this->Model_submission->update_submission($id_submission, $data_update)) {
-            // Log aktivitas
+            
             $this->Model_log_aktivitas->tambah_log(
                 $this->session->userdata('id_pengguna'),
                 'Mengambil submission untuk diproses',
@@ -256,13 +256,13 @@ class Review_submission extends CI_Controller {
             return;
         }
 
-        // Cek apakah submission sedang diproses oleh staff ini
+        
         if ($submission['status'] !== 'diproses' || $submission['diproses_oleh'] != $this->session->userdata('id_pengguna')) {
             echo json_encode(array('success' => false, 'message' => 'Anda tidak dapat mengembalikan submission ini.'));
             return;
         }
 
-        // Update status kembali ke pending
+        
         $data_update = array(
             'status' => 'pending',
             'diproses_oleh' => null,
@@ -270,7 +270,7 @@ class Review_submission extends CI_Controller {
         );
 
         if ($this->Model_submission->update_submission($id_submission, $data_update)) {
-            // Log aktivitas
+            
             $this->Model_log_aktivitas->tambah_log(
                 $this->session->userdata('id_pengguna'),
                 'Mengembalikan submission ke pending',
@@ -312,14 +312,14 @@ class Review_submission extends CI_Controller {
             show_404();
         }
 
-        // Log aktivitas
+        
         $this->Model_log_aktivitas->tambah_log(
             $this->session->userdata('id_pengguna'),
             'Download file submission',
             "Download file {$field_name} dari submission {$submission['nomor_submission']}"
         );
 
-        // Force download
+        
         $this->load->helper('download');
         force_download($file_data['value'], file_get_contents($file_path));
     }
@@ -366,7 +366,7 @@ class Review_submission extends CI_Controller {
         $this->form_validation->set_rules('status', 'Status', 'required|in_list[disetujui,ditolak]');
         $this->form_validation->set_rules('catatan_staff', 'Catatan', 'required|min_length[10]|max_length[1000]');
 
-        // Set pesan error dalam bahasa Indonesia
+        
         $this->form_validation->set_message('required', '{field} harus diisi.');
         $this->form_validation->set_message('in_list', '{field} tidak valid.');
         $this->form_validation->set_message('min_length', '{field} minimal {param} karakter.');
@@ -377,9 +377,9 @@ class Review_submission extends CI_Controller {
      * Kirim notifikasi email ke user (opsional)
      */
     private function _kirim_notifikasi_email($submission, $status, $catatan) {
-        // Implementasi pengiriman email notifikasi
-        // Bisa menggunakan library email CodeIgniter
-        // Untuk saat ini hanya log saja
+        
+        
+        
         
         $this->Model_log_aktivitas->tambah_log(
             $this->session->userdata('id_pengguna'),

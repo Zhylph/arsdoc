@@ -145,7 +145,7 @@
             <?php
             $form_action = site_url('user/submission/buat/' . $template['id_template']);
             echo '<!-- Form action: ' . $form_action . ' -->';
-            // Debugging wajib_diisi values in view
+            
             echo '<!-- Debug wajib_diisi values: ';
             if (!empty($field_template)) {
                 foreach ($field_template as $field) {
@@ -154,7 +154,7 @@
             }
             echo ' -->';
             ?>
-            <form action="<?php echo $form_action; ?>" method="POST" enctype="multipart/form-data" class="space-y-6" id="submission-form" onsubmit="console.log('Form submitted:', this); return true;">
+            <form action="<?php echo $form_action; ?>" method="POST" enctype="multipart/form-data" class="space-y-6" id="submission-form">
 
                 <?php if (!empty($field_template)): ?>
                     <?php foreach ($field_template as $field): ?>
@@ -162,7 +162,7 @@
                             <label for="<?php echo $field['nama_field']; ?>" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 <?php echo ucfirst(str_replace('_', ' ', $field['nama_field'])); ?>
                                 <?php
-                                // Check if field is required - handle both 'ya'/'tidak' and 1/0 values
+                                
                                 $is_required = ($field['wajib_diisi'] === 'ya' || $field['wajib_diisi'] === '1' || $field['wajib_diisi'] == 1);
                                 if ($is_required): ?>
                                     <span class="text-red-500">*</span>
@@ -176,12 +176,12 @@
                             <?php
                             $field_attributes = array(
                                 'id' => $field['nama_field'],
-                                'name' => $field['nama_field'],
+                                'name' => 'field_' . $field['nama_field'],
                                 'class' => 'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100',
-                                'value' => set_value($field['nama_field'])
+                                'value' => set_value('field_' . $field['nama_field'])
                             );
 
-                            // Check if field is required - handle both 'ya'/'tidak' and 1/0 values
+                            
                             $is_required = ($field['wajib_diisi'] === 'ya' || $field['wajib_diisi'] === '1' || $field['wajib_diisi'] == 1);
                             if ($is_required) {
                                 $field_attributes['required'] = 'required';
@@ -292,36 +292,36 @@
 </div>
 
 <script>
-// Enhanced file upload validation and debugging
+
 document.addEventListener('DOMContentLoaded', function() {
     const fileInputs = document.querySelectorAll('input[type="file"]');
     const form = document.getElementById('submission-form');
 
-    // Debug template data
+    
     console.log('=== TEMPLATE DEBUG INFO ===');
     console.log('Template data:', <?php echo json_encode($template); ?>);
     console.log('Field template:', <?php echo json_encode($field_template); ?>);
 
-    // Check PHP upload limits
+    
     console.log('=== PHP UPLOAD LIMITS ===');
     console.log('upload_max_filesize:', '<?php echo ini_get("upload_max_filesize"); ?>');
     console.log('post_max_size:', '<?php echo ini_get("post_max_size"); ?>');
     console.log('max_file_uploads:', '<?php echo ini_get("max_file_uploads"); ?>');
 
-    // Add real-time validation to file inputs
+    
     fileInputs.forEach(function(input) {
-        // Get max size from template
-        const templateMaxSize = <?php echo isset($template['max_ukuran_file']) ? $template['max_ukuran_file'] : 10485760; ?>; // bytes
+        
+        const templateMaxSize = <?php echo isset($template['max_ukuran_file']) ? $template['max_ukuran_file'] : 10485760; ?>; 
         const maxSizeMB = (templateMaxSize / 1024 / 1024).toFixed(1);
 
         console.log('File input:', input.name, 'Max size:', maxSizeMB + 'MB');
 
-        // Add validation message container
+        
         const validationDiv = document.createElement('div');
         validationDiv.className = 'validation-message mt-2 text-sm';
         input.parentNode.appendChild(validationDiv);
 
-        // Update max size display
+        
         const existingInfo = input.parentNode.querySelector('.text-xs.text-gray-500');
         if (existingInfo && existingInfo.textContent.includes('Ukuran maksimal')) {
             existingInfo.textContent = 'Ukuran maksimal: ' + maxSizeMB + ' MB';
@@ -346,7 +346,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('File extension:', fileExt);
                 console.log('Max allowed:', maxSizeMB + ' MB');
 
-                // Validate file size
+                
                 let isValid = true;
                 let errorMessage = '';
 
@@ -355,7 +355,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     errorMessage = `File terlalu besar! Maksimal ${maxSizeMB} MB, file Anda ${fileSizeMB} MB`;
                 }
 
-                // Validate file type
+                
                 const allowedTypes = '<?php echo isset($template["tipe_file_diizinkan"]) ? $template["tipe_file_diizinkan"] : "pdf,doc,docx,jpg,jpeg,png"; ?>';
                 const allowedExtensions = allowedTypes.split(',').map(ext => ext.trim().toLowerCase());
 
@@ -364,7 +364,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     errorMessage = `Tipe file tidak diizinkan! Hanya: ${allowedTypes}`;
                 }
 
-                // Display validation result
+                
                 if (isValid) {
                     validationDiv.innerHTML = `
                         <div class="flex items-center text-green-600">
@@ -390,7 +390,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Enhanced form submission validation
+    
     if (form) {
         form.addEventListener('submit', function(e) {
             console.log('=== FORM SUBMISSION ===');
@@ -401,7 +401,7 @@ document.addEventListener('DOMContentLoaded', function() {
             let hasError = false;
             let errorMessages = [];
 
-            // Check all file inputs
+            
             const fileInputs = this.querySelectorAll('input[type="file"]');
             fileInputs.forEach(function(input) {
                 const file = input.files[0];
@@ -424,7 +424,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         console.log('Validation error: File size too large', input.name, file.size);
                     }
 
-                     // Validate file type - this part is already covered by the change listener, but double-check
+                     
                     const allowedTypes = '<?php echo isset($template["tipe_file_diizinkan"]) ? $template["tipe_file_diizinkan"] : "pdf,doc,docx,jpg,jpeg,png"; ?>';
                     const allowedExtensions = allowedTypes.split(',').map(ext => ext.trim().toLowerCase());
                     const fileExt = file.name.split('.').pop().toLowerCase();
@@ -437,7 +437,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
 
-            // Check validation messages generated by real-time validation
+            
             const errorDivs = this.querySelectorAll('.validation-message .text-red-600');
              console.log('Number of real-time validation errors found:', errorDivs.length);
             if (errorDivs.length > 0) {
@@ -451,11 +451,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (hasError) {
                 console.error('Form validation errors:', errorMessages);
                 alert('Error:\n' + errorMessages.join('\n'));
-                e.preventDefault(); // Prevent form submission
+                e.preventDefault(); 
                 return false;
             }
 
-            // Show loading state
+            
             const submitBtn = this.querySelector('button[type="submit"]');
             if (submitBtn) {
                 submitBtn.disabled = true;

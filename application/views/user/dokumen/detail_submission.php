@@ -238,7 +238,7 @@ function closeDeleteModal() {
 
 document.getElementById('confirmDelete').addEventListener('click', function() {
     if (submissionToDelete) {
-        // Send AJAX request to delete submission
+        
         fetch('<?php echo site_url('user/dokumen/hapus_submission'); ?>', {
             method: 'POST',
             headers: {
@@ -266,7 +266,7 @@ document.getElementById('confirmDelete').addEventListener('click', function() {
     }
 });
 
-// Close modal when clicking outside
+
 document.getElementById('deleteModal').addEventListener('click', function(e) {
     if (e.target === this) {
         closeDeleteModal();

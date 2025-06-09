@@ -5,7 +5,7 @@ class Test_submission extends CI_Controller {
 
     public function __construct() {
         parent::__construct();
-        // No authentication required for testing
+        
     }
 
     public function index() {
@@ -14,11 +14,11 @@ class Test_submission extends CI_Controller {
         echo "<p>Base URL: " . base_url() . "</p>";
         echo "<p>Current URL: " . current_url() . "</p>";
         
-        // Test session
+        
         echo "<h2>Session Test:</h2>";
         echo "<pre>" . print_r($this->session->all_userdata(), true) . "</pre>";
         
-        // Test form
+        
         echo "<h2>Test Form:</h2>";
         if ($this->input->post()) {
             echo "<h3>POST Data Received:</h3>";
@@ -38,10 +38,10 @@ class Test_submission extends CI_Controller {
         echo "<h1>Test User Submission Form</h1>";
         echo "<p>Template ID: " . $id_template . "</p>";
         
-        // Load models
+        
         $this->load->model('Model_template_dokumen');
         
-        // Get template
+        
         $template = $this->Model_template_dokumen->ambil_template_by_id($id_template);
         
         if (!$template) {
@@ -52,12 +52,12 @@ class Test_submission extends CI_Controller {
         echo "<h2>Template Info:</h2>";
         echo "<pre>" . print_r($template, true) . "</pre>";
         
-        // Get fields
+        
         $fields = $this->Model_template_dokumen->ambil_field_by_template($id_template);
         echo "<h2>Template Fields:</h2>";
         echo "<pre>" . print_r($fields, true) . "</pre>";
         
-        // Test form submission
+        
         if ($this->input->post()) {
             echo "<h2>Form Submitted!</h2>";
             echo "<h3>POST Data:</h3>";
@@ -65,7 +65,7 @@ class Test_submission extends CI_Controller {
             echo "<h3>FILES Data:</h3>";
             echo "<pre>" . print_r($_FILES, true) . "</pre>";
             
-            // Test file upload
+            
             if (!empty($_FILES)) {
                 foreach ($_FILES as $field_name => $file) {
                     if ($file['error'] === UPLOAD_ERR_OK) {
@@ -77,7 +77,7 @@ class Test_submission extends CI_Controller {
             }
         }
         
-        // Generate form
+        
         echo "<h2>Test Submission Form:</h2>";
         echo '<form method="POST" enctype="multipart/form-data">';
         

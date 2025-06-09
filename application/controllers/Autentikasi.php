@@ -17,7 +17,7 @@ class Autentikasi extends CI_Controller {
      * Halaman login
      */
     public function index() {
-        // Jika sudah login, redirect ke dashboard
+        
         if ($this->session->userdata('logged_in')) {
             $this->_redirect_by_role();
             return;
@@ -30,7 +30,7 @@ class Autentikasi extends CI_Controller {
      * Proses login
      */
     public function login() {
-        // Jika sudah login, redirect ke dashboard
+        
         if ($this->session->userdata('logged_in')) {
             $this->_redirect_by_role();
             return;
@@ -52,15 +52,15 @@ class Autentikasi extends CI_Controller {
      * Proses logout
      */
     public function logout() {
-        // Catat aktivitas logout
+        
         if ($this->session->userdata('logged_in')) {
             $this->_catat_aktivitas('Logout dari sistem');
         }
 
-        // Hapus semua session data
+        
         $this->session->sess_destroy();
         
-        // Redirect ke halaman login dengan pesan
+        
         $this->session->set_flashdata('success_message', 'Anda telah berhasil keluar dari sistem.');
         redirect('autentikasi/login');
     }
@@ -69,7 +69,7 @@ class Autentikasi extends CI_Controller {
      * Halaman registrasi (hanya untuk role user)
      */
     public function registrasi() {
-        // Jika sudah login, redirect ke dashboard
+        
         if ($this->session->userdata('logged_in')) {
             $this->_redirect_by_role();
             return;
@@ -91,7 +91,7 @@ class Autentikasi extends CI_Controller {
      * Proses login pengguna
      */
     private function _proses_login() {
-        // Set validation rules
+        
         $this->form_validation->set_rules('email', 'Email', 'required|valid_email');
         $this->form_validation->set_rules('password', 'Password', 'required');
 
@@ -108,7 +108,7 @@ class Autentikasi extends CI_Controller {
             $pengguna = $this->Model_pengguna->validasi_login($email, $password);
 
             if ($pengguna) {
-                // Set session data
+                
                 $session_data = array(
                     'id_pengguna' => $pengguna['id_pengguna'],
                     'nama_lengkap' => $pengguna['nama_lengkap'],
@@ -119,10 +119,10 @@ class Autentikasi extends CI_Controller {
                 );
                 $this->session->set_userdata($session_data);
 
-                // Catat aktivitas login
+                
                 $this->_catat_aktivitas('Login ke sistem');
 
-                // Redirect berdasarkan role
+                
                 $this->_redirect_by_role();
             } else {
                 $data = array(
@@ -138,7 +138,7 @@ class Autentikasi extends CI_Controller {
      * Proses registrasi pengguna baru
      */
     private function _proses_registrasi() {
-        // Set validation rules
+        
         $this->form_validation->set_rules('nama_lengkap', 'Nama Lengkap', 'required|min_length[3]|max_length[100]');
         $this->form_validation->set_rules('email', 'Email', 'required|valid_email|is_unique[pengguna.email]');
         $this->form_validation->set_rules('password', 'Password', 'required|min_length[6]');
@@ -155,7 +155,7 @@ class Autentikasi extends CI_Controller {
                 'nama_lengkap' => $this->input->post('nama_lengkap'),
                 'email' => $this->input->post('email'),
                 'password' => $this->input->post('password'),
-                'role' => 'user', // Default role untuk registrasi
+                'role' => 'user', 
                 'status' => 'aktif'
             );
 
@@ -207,7 +207,7 @@ class Autentikasi extends CI_Controller {
                 'user_agent' => $this->input->user_agent()
             );
             
-            // Insert ke tabel log_aktivitas
+            
             $this->db->insert('log_aktivitas', $data_log);
         }
     }

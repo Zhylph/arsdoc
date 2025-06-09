@@ -10,7 +10,7 @@ class Jenis_dokumen extends CI_Controller {
     public function __construct() {
         parent::__construct();
         
-        // Cek apakah user sudah login dan memiliki role staff
+        
         if (!$this->session->userdata('logged_in')) {
             redirect('autentikasi/login');
         }
@@ -36,12 +36,12 @@ class Jenis_dokumen extends CI_Controller {
             )
         );
 
-        // Pagination setup
+        
         $per_page = 10;
         $page = $this->input->get('page') ? $this->input->get('page') : 1;
         $offset = ($page - 1) * $per_page;
 
-        // Filter setup
+        
         $filter = array();
         if ($this->input->get('status')) {
             $filter['status'] = $this->input->get('status');
@@ -50,11 +50,11 @@ class Jenis_dokumen extends CI_Controller {
             $filter['pencarian'] = $this->input->get('pencarian');
         }
 
-        // Ambil data
+        
         $data['jenis_dokumen'] = $this->Model_jenis_dokumen->ambil_semua_jenis_dokumen($filter, $per_page, $offset);
         $total_rows = $this->Model_jenis_dokumen->hitung_semua_jenis_dokumen($filter);
 
-        // Setup pagination
+        
         $config['base_url'] = site_url('staff/jenis_dokumen');
         $config['total_rows'] = $total_rows;
         $config['per_page'] = $per_page;
@@ -62,7 +62,7 @@ class Jenis_dokumen extends CI_Controller {
         $config['query_string_segment'] = 'page';
         $config['use_page_numbers'] = TRUE;
         
-        // Pagination styling
+        
         $config['full_tag_open'] = '<nav><ul class="flex items-center -space-x-px h-8 text-sm">';
         $config['full_tag_close'] = '</ul></nav>';
         $config['first_link'] = 'Pertama';
@@ -89,7 +89,7 @@ class Jenis_dokumen extends CI_Controller {
         $data['current_page'] = $page;
         $data['per_page'] = $per_page;
 
-        // Load views
+        
         $this->load->view('template/header', $data);
         $this->load->view('template/sidebar', $data);
         $this->load->view('staff/jenis_dokumen/index', $data);
@@ -204,7 +204,7 @@ class Jenis_dokumen extends CI_Controller {
             );
 
             if ($this->Model_jenis_dokumen->tambah_jenis_dokumen($data_jenis)) {
-                // Catat aktivitas
+                
                 $this->Model_jenis_dokumen->catat_aktivitas(
                     'Menambah jenis dokumen baru',
                     'Jenis dokumen: ' . $data_jenis['nama_jenis'],
@@ -238,7 +238,7 @@ class Jenis_dokumen extends CI_Controller {
             );
 
             if ($this->Model_jenis_dokumen->update_jenis_dokumen($id_jenis, $data_jenis)) {
-                // Catat aktivitas
+                
                 $this->Model_jenis_dokumen->catat_aktivitas(
                     'Mengupdate jenis dokumen',
                     'Jenis dokumen: ' . $data_jenis['nama_jenis'],
@@ -271,7 +271,7 @@ class Jenis_dokumen extends CI_Controller {
         }
 
         if ($this->Model_jenis_dokumen->hapus_jenis_dokumen($id_jenis)) {
-            // Catat aktivitas
+            
             $this->Model_jenis_dokumen->catat_aktivitas(
                 'Menghapus jenis dokumen',
                 'Jenis dokumen: ' . $jenis_dokumen['nama_jenis'],
@@ -302,7 +302,7 @@ class Jenis_dokumen extends CI_Controller {
         }
 
         if ($this->Model_jenis_dokumen->ubah_status_jenis_dokumen($id_jenis, $status)) {
-            // Catat aktivitas
+            
             $this->Model_jenis_dokumen->catat_aktivitas(
                 'Mengubah status jenis dokumen',
                 'Jenis dokumen: ' . $jenis_dokumen['nama_jenis'] . ' menjadi ' . $status,

@@ -10,7 +10,7 @@ class Dashboard extends CI_Controller {
     public function __construct() {
         parent::__construct();
         
-        // Cek apakah user sudah login dan memiliki role admin
+        
         if (!$this->session->userdata('logged_in')) {
             redirect('autentikasi/login');
         }
@@ -34,16 +34,16 @@ class Dashboard extends CI_Controller {
             )
         );
 
-        // Ambil statistik untuk dashboard
+        
         $data['statistik'] = $this->_ambil_statistik_dashboard();
         
-        // Ambil aktivitas terbaru
+        
         $data['aktivitas_terbaru'] = $this->_ambil_aktivitas_terbaru();
         
-        // Ambil pengguna terbaru
+        
         $data['pengguna_terbaru'] = $this->_ambil_pengguna_terbaru();
 
-        // Load views
+        
         $this->load->view('template/header', $data);
         $this->load->view('template/sidebar', $data);
         $this->load->view('admin/dashboard', $data);
@@ -56,25 +56,25 @@ class Dashboard extends CI_Controller {
     private function _ambil_statistik_dashboard() {
         $statistik = array();
 
-        // Hitung total pengguna berdasarkan role
+        
         $jumlah_pengguna = $this->Model_pengguna->hitung_pengguna_by_role();
         $statistik['total_admin'] = $jumlah_pengguna['admin'];
         $statistik['total_staff'] = $jumlah_pengguna['staff'];
         $statistik['total_user'] = $jumlah_pengguna['user'];
         $statistik['total_pengguna'] = $statistik['total_admin'] + $statistik['total_staff'] + $statistik['total_user'];
 
-        // Hitung total jenis dokumen
+        
         $this->db->where('status', 'aktif');
         $statistik['total_jenis_dokumen'] = $this->db->count_all_results('jenis_dokumen');
 
-        // Hitung total template dokumen
+        
         $this->db->where('status', 'aktif');
         $statistik['total_template'] = $this->db->count_all_results('template_dokumen');
 
-        // Hitung total submission
+        
         $statistik['total_submission'] = $this->db->count_all_results('submission_dokumen');
 
-        // Hitung submission berdasarkan status
+        
         $this->db->where('status', 'pending');
         $statistik['submission_pending'] = $this->db->count_all_results('submission_dokumen');
 
@@ -87,10 +87,10 @@ class Dashboard extends CI_Controller {
         $this->db->where('status', 'ditolak');
         $statistik['submission_ditolak'] = $this->db->count_all_results('submission_dokumen');
 
-        // Hitung total file pribadi
+        
         $statistik['total_file_pribadi'] = $this->db->count_all_results('file_pribadi');
 
-        // Hitung ukuran total file (dalam MB)
+        
         $this->db->select_sum('ukuran_file');
         $query = $this->db->get('file_pribadi');
         $ukuran_file_pribadi = $query->row()->ukuran_file ?: 0;
@@ -99,7 +99,7 @@ class Dashboard extends CI_Controller {
         $query = $this->db->get('data_submission');
         $ukuran_file_submission = $query->row()->ukuran_file ?: 0;
 
-        $statistik['total_ukuran_file'] = round(($ukuran_file_pribadi + $ukuran_file_submission) / 1048576, 2); // Convert to MB
+        $statistik['total_ukuran_file'] = round(($ukuran_file_pribadi + $ukuran_file_submission) / 1048576, 2); 
 
         return $statistik;
     }
@@ -132,7 +132,7 @@ class Dashboard extends CI_Controller {
      * API endpoint untuk data chart (AJAX)
      */
     public function chart_data() {
-        // Pastikan request adalah AJAX
+        
         if (!$this->input->is_ajax_request()) {
             show_404();
         }
@@ -239,7 +239,7 @@ class Dashboard extends CI_Controller {
             )
         );
 
-        // Ambil informasi sistem
+        
         $data['sistem_info'] = array(
             'php_version' => phpversion(),
             'ci_version' => CI_VERSION,

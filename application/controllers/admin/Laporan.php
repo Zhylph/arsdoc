@@ -10,7 +10,7 @@ class Laporan extends CI_Controller {
     public function __construct() {
         parent::__construct();
 
-        // Cek apakah user sudah login dan memiliki role admin
+        
         if (!$this->session->userdata('logged_in')) {
             redirect('autentikasi/login');
         }
@@ -40,22 +40,22 @@ class Laporan extends CI_Controller {
             )
         );
 
-        // Ambil filter dari input
+        
         $filter = $this->_get_filter();
 
-        // Statistik umum
+        
         $data['statistik_umum'] = $this->_ambil_statistik_umum($filter);
 
-        // Statistik submission
+        
         $data['statistik_submission'] = $this->_ambil_statistik_submission($filter);
 
-        // Statistik pengguna
+        
         $data['statistik_pengguna'] = $this->_ambil_statistik_pengguna($filter);
 
-        // Template paling populer
+        
         $data['template_populer'] = $this->Model_submission->ambil_statistik_by_template(5);
 
-        // Aktivitas terbaru
+        
         $data['aktivitas_terbaru'] = $this->Model_log_aktivitas->ambil_aktivitas_terbaru(10);
 
         $data['filter'] = $filter;
@@ -80,25 +80,25 @@ class Laporan extends CI_Controller {
             )
         );
 
-        // Konfigurasi pagination
+        
         $config['base_url'] = base_url('admin/laporan/submission');
         $filter = $this->_get_filter();
         $config['total_rows'] = $this->Model_submission->hitung_total_submission($filter);
         $config['per_page'] = 20;
         $config['uri_segment'] = 4;
 
-        // Styling pagination dengan Flowbite
+        
         $this->_setup_pagination($config);
 
         $offset = $this->uri->segment(4) ? $this->uri->segment(4) : 0;
 
-        // Ambil data submission
+        
         $data['submission'] = $this->Model_submission->ambil_semua_submission($filter, $config['per_page'], $offset);
         $data['pagination'] = $this->pagination->create_links();
         $data['filter'] = $filter;
         $data['total_rows'] = $config['total_rows'];
 
-        // Ambil data untuk dropdown filter
+        
         $data['template_list'] = $this->Model_template_dokumen->ambil_template_aktif();
         $data['staff_list'] = $this->Model_pengguna->ambil_staff_aktif();
 
@@ -122,7 +122,7 @@ class Laporan extends CI_Controller {
             )
         );
 
-        // Konfigurasi pagination
+        
         $config['base_url'] = base_url('admin/laporan/pengguna');
         $filter = $this->_get_filter();
         $config['total_rows'] = $this->Model_pengguna->hitung_total_pengguna($filter);
@@ -133,7 +133,7 @@ class Laporan extends CI_Controller {
 
         $offset = $this->uri->segment(4) ? $this->uri->segment(4) : 0;
 
-        // Ambil data pengguna
+        
         $data['pengguna'] = $this->Model_pengguna->ambil_semua_pengguna($filter, $config['per_page'], $offset);
         $data['pagination'] = $this->pagination->create_links();
         $data['filter'] = $filter;
@@ -159,7 +159,7 @@ class Laporan extends CI_Controller {
             )
         );
 
-        // Konfigurasi pagination
+        
         $config['base_url'] = base_url('admin/laporan/aktivitas');
         $filter = $this->_get_filter();
         $config['total_rows'] = $this->Model_log_aktivitas->hitung_total_log($filter);
@@ -170,13 +170,13 @@ class Laporan extends CI_Controller {
 
         $offset = $this->uri->segment(4) ? $this->uri->segment(4) : 0;
 
-        // Ambil data log aktivitas
+        
         $data['log_aktivitas'] = $this->Model_log_aktivitas->ambil_semua_log($filter, $config['per_page'], $offset);
         $data['pagination'] = $this->pagination->create_links();
         $data['filter'] = $filter;
         $data['total_rows'] = $config['total_rows'];
 
-        // Statistik aktivitas
+        
         $data['statistik_aktivitas'] = $this->Model_log_aktivitas->ambil_ringkasan_aktivitas();
         $data['aktivitas_populer'] = $this->Model_log_aktivitas->ambil_aktivitas_populer(10);
 
@@ -193,12 +193,12 @@ class Laporan extends CI_Controller {
         $filter = $this->_get_filter();
         $submission = $this->Model_submission->ambil_semua_submission($filter);
 
-        // Set header untuk download Excel
+        
         header('Content-Type: application/vnd.ms-excel');
         header('Content-Disposition: attachment;filename="laporan_submission_' . date('Y-m-d') . '.xls"');
         header('Cache-Control: max-age=0');
 
-        // Load view untuk export
+        
         $data['submission'] = $submission;
         $data['filter'] = $filter;
         $this->load->view('admin/laporan/export_submission', $data);
@@ -211,12 +211,12 @@ class Laporan extends CI_Controller {
         $filter = $this->_get_filter();
         $pengguna = $this->Model_pengguna->ambil_semua_pengguna($filter);
 
-        // Set header untuk download Excel
+        
         header('Content-Type: application/vnd.ms-excel');
         header('Content-Disposition: attachment;filename="laporan_pengguna_' . date('Y-m-d') . '.xls"');
         header('Cache-Control: max-age=0');
 
-        // Load view untuk export
+        
         $data['pengguna'] = $pengguna;
         $data['filter'] = $filter;
         $this->load->view('admin/laporan/export_pengguna', $data);
@@ -307,15 +307,15 @@ class Laporan extends CI_Controller {
     private function _ambil_statistik_umum($filter) {
         $statistik = array();
 
-        // Total pengguna
+        
         $statistik['total_pengguna'] = $this->Model_pengguna->hitung_total_pengguna();
         $statistik['pengguna_aktif'] = $this->Model_pengguna->hitung_pengguna_by_status('aktif');
 
-        // Total template dan jenis dokumen
+        
         $statistik['total_template'] = $this->Model_template_dokumen->hitung_total_template();
         $statistik['total_jenis_dokumen'] = $this->Model_jenis_dokumen->hitung_total_jenis_dokumen();
 
-        // Total submission
+        
         $statistik['total_submission'] = $this->Model_submission->hitung_total_submission();
 
         return $statistik;

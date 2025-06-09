@@ -89,7 +89,7 @@
                 <?php if (!empty($field_template)): ?>
                     <?php foreach ($field_template as $field): ?>
                         <div class="form-group">
-                            <label for="<?php echo $field['nama_field']; ?>" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <label for="field_"<?php echo $field['nama_field']; ?>" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                                 <?php echo ucfirst(str_replace('_', ' ', $field['nama_field'])); ?>
                                 <?php if ($field['wajib_diisi']): ?>
                                     <span class="text-red-500">*</span>
@@ -101,14 +101,14 @@
                             <?php endif; ?>
 
                             <?php
-                            // Get current value from submission data
+                            
                             $current_value = isset($submission_values[$field['nama_field']]) ? $submission_values[$field['nama_field']] : '';
 
                             $field_attributes = array(
-                                'id' => $field['nama_field'],
-                                'name' => $field['nama_field'],
+                                'id' => 'field_' . $field['nama_field'],
+                                'name' => 'field_' . $field['nama_field'],
                                 'class' => 'w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-gray-100',
-                                'value' => set_value($field['nama_field'], $current_value)
+                                'value' => set_value('field_' . $field['nama_field'], $current_value)
                             );
 
                             if ($field['wajib_diisi'] && $field['tipe_field'] !== 'file') {
@@ -190,7 +190,7 @@
                                             $opsi = trim($opsi);
                                             $options[$opsi] = $opsi;
                                         }
-                                        echo form_dropdown($field['nama_field'], $options, set_value($field['nama_field'], $current_value), $field_attributes);
+                                        echo form_dropdown('field_' . $field['nama_field'], $options, set_value('field_' . $field['nama_field'], $current_value), $field_attributes);
                                         ?>
                                     <?php endif; ?>
                                     <?php break; ?>
@@ -199,7 +199,7 @@
                                     <?php echo form_input($field_attributes); ?>
                             <?php endswitch; ?>
 
-                            <?php echo form_error($field['nama_field'], '<p class="mt-1 text-sm text-red-600">', '</p>'); ?>
+                            <?php echo form_error('field_' . $field['nama_field'], '<p class="mt-1 text-sm text-red-600">', '</p>'); ?>
                         </div>
                     <?php endforeach; ?>
                 <?php else: ?>
@@ -229,7 +229,7 @@
 </div>
 
 <script>
-// File upload preview and validation
+
 document.addEventListener('DOMContentLoaded', function() {
     const fileInputs = document.querySelectorAll('input[type="file"]');
 
@@ -237,11 +237,11 @@ document.addEventListener('DOMContentLoaded', function() {
         input.addEventListener('change', function() {
             const file = this.files[0];
             if (file) {
-                // Show file name
+                
                 const fileName = file.name;
-                const fileSize = (file.size / 1024 / 1024).toFixed(2); // MB
+                const fileSize = (file.size / 1024 / 1024).toFixed(2); 
 
-                // Create or update file info display
+                
                 let fileInfo = this.parentNode.querySelector('.file-info');
                 if (!fileInfo) {
                     fileInfo = document.createElement('div');

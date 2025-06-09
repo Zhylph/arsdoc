@@ -10,7 +10,7 @@ class Log_aktivitas extends CI_Controller {
     public function __construct() {
         parent::__construct();
         
-        // Cek apakah user sudah login dan memiliki role admin
+        
         if (!$this->session->userdata('logged_in')) {
             redirect('autentikasi/login');
         }
@@ -37,28 +37,28 @@ class Log_aktivitas extends CI_Controller {
             )
         );
 
-        // Konfigurasi pagination
+        
         $config['base_url'] = base_url('admin/log_aktivitas/index');
         $filter = $this->_get_filter();
         $config['total_rows'] = $this->Model_log_aktivitas->hitung_total_log($filter);
         $config['per_page'] = 25;
         $config['uri_segment'] = 4;
         
-        // Styling pagination dengan Flowbite
+        
         $this->_setup_pagination($config);
         
         $offset = $this->uri->segment(4) ? $this->uri->segment(4) : 0;
         
-        // Ambil data log aktivitas
+        
         $data['log_aktivitas'] = $this->Model_log_aktivitas->ambil_semua_log($filter, $config['per_page'], $offset);
         $data['pagination'] = $this->pagination->create_links();
         $data['filter'] = $filter;
         $data['total_rows'] = $config['total_rows'];
         
-        // Statistik aktivitas
+        
         $data['statistik'] = $this->Model_log_aktivitas->ambil_ringkasan_aktivitas();
         
-        // Data untuk filter dropdown
+        
         $data['pengguna_list'] = $this->Model_pengguna->ambil_semua_pengguna();
 
         $this->load->view('template/header', $data);
@@ -111,16 +111,16 @@ class Log_aktivitas extends CI_Controller {
             )
         );
 
-        // Statistik umum
+        
         $data['statistik_umum'] = $this->Model_log_aktivitas->ambil_ringkasan_aktivitas();
         
-        // Aktivitas populer
+        
         $data['aktivitas_populer'] = $this->Model_log_aktivitas->ambil_aktivitas_populer(15);
         
-        // Statistik harian (7 hari terakhir)
+        
         $data['statistik_harian'] = $this->Model_log_aktivitas->ambil_statistik_harian(7);
         
-        // Ukuran tabel log
+        
         $data['ukuran_tabel'] = $this->Model_log_aktivitas->ambil_ukuran_tabel();
 
         $this->load->view('template/header', $data);
@@ -139,15 +139,15 @@ class Log_aktivitas extends CI_Controller {
         if ($format === 'csv') {
             $this->Model_log_aktivitas->export_log($filter);
         } else {
-            // Export Excel
+            
             $log_aktivitas = $this->Model_log_aktivitas->ambil_semua_log($filter);
             
-            // Set header untuk download Excel
+            
             header('Content-Type: application/vnd.ms-excel');
             header('Content-Disposition: attachment;filename="log_aktivitas_' . date('Y-m-d') . '.xls"');
             header('Cache-Control: max-age=0');
 
-            // Load view untuk export
+            
             $data['log_aktivitas'] = $log_aktivitas;
             $data['filter'] = $filter;
             $this->load->view('admin/log_aktivitas/export', $data);
@@ -172,7 +172,7 @@ class Log_aktivitas extends CI_Controller {
         $result = $this->Model_log_aktivitas->hapus_log_lama($hari);
         
         if ($result) {
-            // Log aktivitas
+            
             $this->Model_log_aktivitas->tambah_log(
                 $this->session->userdata('id_pengguna'),
                 'Hapus log aktivitas lama',
@@ -200,14 +200,14 @@ class Log_aktivitas extends CI_Controller {
             return;
         }
 
-        // Simpan log terakhir sebelum menghapus semua
+        
         $this->Model_log_aktivitas->tambah_log(
             $this->session->userdata('id_pengguna'),
             'Hapus semua log aktivitas',
             'Menghapus semua log aktivitas sistem'
         );
 
-        // Hapus semua log kecuali yang baru saja dibuat
+        
         $this->db->where('id_log <', $this->db->insert_id());
         $result = $this->db->delete('log_aktivitas');
 

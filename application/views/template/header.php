@@ -16,6 +16,7 @@
 
     <!-- Dark Theme CSS -->
     <link rel="stylesheet" href="<?= base_url('assets/css/dark-theme.css') ?>">
+    <link rel="icon" href="<?= base_url('assets/Logo.ico'); ?>" type="image/x-icon">
 
     <!-- Custom CSS -->
     <style>
