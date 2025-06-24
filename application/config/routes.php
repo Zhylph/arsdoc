@@ -70,3 +70,6 @@ $route['staff/dashboard'] = 'staff/dashboard';
 $route['user'] = 'user/dashboard';
 $route['user/dashboard'] = 'user/dashboard';
 $route['user/submission/buat/(:num)'] = 'user/submission/buat/$1';
+$route['staff/jenis_dokumen/hapus'] = 'staff/jenis_dokumen/hapus';
+$route['staff/jenis_dokumen/ubah_status'] = 'staff/jenis_dokumen/ubah_status';
+

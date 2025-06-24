@@ -18,6 +18,9 @@ class Dashboard extends CI_Controller {
         if ($this->session->userdata('role') !== 'staff') {
             show_error('Anda tidak memiliki akses ke halaman ini.', 403, 'Akses Ditolak');
         }
+        
+        // Load model yang diperlukan
+        $this->load->model('Model_file_pribadi');
     }
 
     /**
@@ -85,6 +88,18 @@ class Dashboard extends CI_Controller {
 
         
         $statistik['total_submission'] = $this->db->count_all_results('submission_dokumen');
+
+        // Statistik file pribadi user
+        $statistik['total_file_pribadi'] = $this->db->count_all_results('file_pribadi');
+        
+        // File pribadi hari ini
+        $this->db->where('DATE(tanggal_upload)', date('Y-m-d'));
+        $statistik['file_pribadi_hari_ini'] = $this->db->count_all_results('file_pribadi');
+        
+        // Total ukuran file pribadi
+        $this->db->select_sum('ukuran_file');
+        $result = $this->db->get('file_pribadi')->row();
+        $statistik['total_ukuran_file'] = $result->ukuran_file ? $result->ukuran_file : 0;
 
         return $statistik;
     }

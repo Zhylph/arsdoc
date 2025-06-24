@@ -58,6 +58,49 @@ class Model_file_pribadi extends CI_Model {
     }
 
     /**
+     * Mendapatkan semua file dengan data user untuk staff
+     */
+    public function ambil_semua_file_dengan_user($filter = array(), $limit = null, $offset = null) {
+        $this->db->select('fp.*, ff.nama_folder, p.nama_lengkap');
+        $this->db->from($this->tabel_file . ' fp');
+        $this->db->join($this->tabel_folder . ' ff', 'fp.id_folder = ff.id_folder', 'left');
+        $this->db->join('pengguna p', 'fp.id_pengguna = p.id_pengguna', 'left');
+
+        // Apply filters
+        if (!empty($filter['id_pengguna'])) {
+            $this->db->where('fp.id_pengguna', $filter['id_pengguna']);
+        }
+
+        if (isset($filter['id_folder'])) {
+            if ($filter['id_folder'] === null) {
+                $this->db->where('fp.id_folder IS NULL');
+            } else {
+                $this->db->where('fp.id_folder', $filter['id_folder']);
+            }
+        }
+
+        if (!empty($filter['tipe_file'])) {
+            $this->db->where('fp.tipe_file', $filter['tipe_file']);
+        }
+
+        if (!empty($filter['pencarian'])) {
+            $this->db->group_start();
+            $this->db->like('fp.nama_file', $filter['pencarian']);
+            $this->db->or_like('fp.deskripsi', $filter['pencarian']);
+            $this->db->or_like('p.nama_lengkap', $filter['pencarian']);
+            $this->db->group_end();
+        }
+
+        $this->db->order_by('fp.tanggal_upload', 'DESC');
+
+        if ($limit !== null) {
+            $this->db->limit($limit, $offset);
+        }
+
+        return $this->db->get()->result_array();
+    }
+
+    /**
      * Menghitung total file dengan filter
      */
     public function hitung_total_file($filter = array()) {
@@ -84,6 +127,41 @@ class Model_file_pribadi extends CI_Model {
             $this->db->group_start();
             $this->db->like('fp.nama_file', $filter['pencarian']);
             $this->db->or_like('fp.deskripsi', $filter['pencarian']);
+            $this->db->group_end();
+        }
+
+        return $this->db->count_all_results();
+    }
+
+    /**
+     * Menghitung total file dengan filter untuk staff
+     */
+    public function hitung_total_file_dengan_user($filter = array()) {
+        $this->db->from($this->tabel_file . ' fp');
+        $this->db->join('pengguna p', 'fp.id_pengguna = p.id_pengguna', 'left');
+
+        // Apply same filters as ambil_semua_file_dengan_user
+        if (!empty($filter['id_pengguna'])) {
+            $this->db->where('fp.id_pengguna', $filter['id_pengguna']);
+        }
+
+        if (isset($filter['id_folder'])) {
+            if ($filter['id_folder'] === null) {
+                $this->db->where('fp.id_folder IS NULL');
+            } else {
+                $this->db->where('fp.id_folder', $filter['id_folder']);
+            }
+        }
+
+        if (!empty($filter['tipe_file'])) {
+            $this->db->where('fp.tipe_file', $filter['tipe_file']);
+        }
+
+        if (!empty($filter['pencarian'])) {
+            $this->db->group_start();
+            $this->db->like('fp.nama_file', $filter['pencarian']);
+            $this->db->or_like('fp.deskripsi', $filter['pencarian']);
+            $this->db->or_like('p.nama_lengkap', $filter['pencarian']);
             $this->db->group_end();
         }
 

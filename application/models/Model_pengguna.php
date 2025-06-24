@@ -46,7 +46,6 @@ class Model_pengguna extends CI_Model {
      * @return array|null
      */
     public function ambil_pengguna_by_id($id_pengguna) {
-        $this->db->select('id_pengguna, nama_lengkap, email, role, status, foto_profil, tanggal_dibuat, tanggal_diperbarui');
         $this->db->where('id_pengguna', $id_pengguna);
         $result = $this->db->get($this->tabel)->row_array();
         return $result ? $result : null;

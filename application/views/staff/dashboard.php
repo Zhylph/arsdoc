@@ -15,7 +15,7 @@
     <div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100"><?php echo $page_title; ?></h1>
         <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Selamat datang, <span class="font-medium"><?php echo $this->session->userdata('nama_lengkap'); ?></span>! Kelola template dan review submission dengan efisien.
+            Selamat datang, <span class="font-medium"><?php echo $this->session->userdata('nama_lengkap'); ?></span>!
         </p>
     </div>
     <div class="mt-4 sm:mt-0 flex space-x-3">
@@ -84,25 +84,26 @@
         </div>
     </div>
 
-    <!-- Total Submission -->
+    <!-- File Pribadi User -->
     <div class="dashboard-card bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div class="p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Submission</p>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">File Pribadi User</p>
                     <p class="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-2">
-                        <?php echo number_format($statistik['total_submission']); ?>
+                        <?php echo number_format($statistik['total_file_pribadi']); ?>
                     </p>
                 </div>
-                <div class="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
-                    <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                <div class="p-3 bg-indigo-100 dark:bg-indigo-900 rounded-lg">
+                    <svg class="w-6 h-6 text-indigo-600 dark:text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                     </svg>
                 </div>
             </div>
-            <div class="mt-4 flex items-center space-x-4 text-sm">
-                <span class="text-green-600 dark:text-green-400 font-medium">Disetujui: <?php echo $statistik['submission_disetujui']; ?></span>
-                <span class="text-red-600 dark:text-red-400 font-medium">Ditolak: <?php echo $statistik['submission_ditolak']; ?></span>
+            <div class="mt-4">
+                <a href="<?php echo site_url('staff/file_pribadi'); ?>" class="text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium">
+                    Lihat File →
+                </a>
             </div>
         </div>
     </div>
@@ -127,6 +128,80 @@
                 <a href="<?php echo site_url('staff/jenis_dokumen'); ?>" class="text-sm text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-300 font-medium">
                     Kelola Jenis →
                 </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Additional Statistics Row -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <!-- Total Submission -->
+    <div class="dashboard-card bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div class="p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Total Submission</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-2">
+                        <?php echo number_format($statistik['total_submission']); ?>
+                    </p>
+                </div>
+                <div class="p-3 bg-green-100 dark:bg-green-900 rounded-lg">
+                    <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="mt-4 flex items-center space-x-4 text-sm">
+                <span class="text-green-600 dark:text-green-400 font-medium">Disetujui: <?php echo $statistik['submission_disetujui']; ?></span>
+                <span class="text-red-600 dark:text-red-400 font-medium">Ditolak: <?php echo $statistik['submission_ditolak']; ?></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- File Pribadi Hari Ini -->
+    <div class="dashboard-card bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div class="p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">File Upload Hari Ini</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-2">
+                        <?php echo number_format($statistik['file_pribadi_hari_ini']); ?>
+                    </p>
+                </div>
+                <div class="p-3 bg-orange-100 dark:bg-orange-900 rounded-lg">
+                    <svg class="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="mt-4">
+                <span class="text-sm text-orange-600 dark:text-orange-400 font-medium">
+                    Total: <?php echo format_bytes($statistik['total_ukuran_file']); ?>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Submission Diproses -->
+    <div class="dashboard-card bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div class="p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Diproses Oleh Saya</p>
+                    <p class="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-2">
+                        <?php echo number_format($statistik['submission_diproses_saya']); ?>
+                    </p>
+                </div>
+                <div class="p-3 bg-teal-100 dark:bg-teal-900 rounded-lg">
+                    <svg class="w-6 h-6 text-teal-600 dark:text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+            </div>
+            <div class="mt-4">
+                <span class="text-sm text-teal-600 dark:text-teal-400 font-medium">
+                    Sedang diproses: <?php echo $statistik['submission_diproses']; ?>
+                </span>
             </div>
         </div>
     </div>
@@ -278,3 +353,18 @@
     }
 }
 </style>
+
+<?php
+/**
+ * Helper function untuk format bytes
+ */
+function format_bytes($bytes, $precision = 2) {
+    $units = array('B', 'KB', 'MB', 'GB', 'TB');
+    
+    for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
+        $bytes /= 1024;
+    }
+    
+    return round($bytes, $precision) . ' ' . $units[$i];
+}
+?>

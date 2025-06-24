@@ -15,7 +15,7 @@
     <div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-gray-100"><?php echo $page_title; ?></h1>
         <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-            Selamat datang, <span class="font-medium"><?php echo $this->session->userdata('nama_lengkap'); ?></span>! Kelola dokumen dan submission Anda dengan mudah.
+            Selamat datang, <span class="font-medium"><?php echo $this->session->userdata('nama_lengkap'); ?></span>! 
         </p>
     </div>
     <div class="mt-4 sm:mt-0">

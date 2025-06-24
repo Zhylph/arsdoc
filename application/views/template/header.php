@@ -79,10 +79,8 @@
 
                 <!-- Logo -->
                 <a href="<?php echo site_url(); ?>" class="flex ml-2 md:mr-24">
-                    <svg class="w-8 h-8 mr-2 text-blue-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm3 1h6v4H7V5zm8 8v2a1 1 0 01-1 1H6a1 1 0 01-1-1v-2h10z" clip-rule="evenodd"></path>
-                    </svg>
-                    <span class="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">Sistem Arsip</span>
+                    <img src="<?php echo base_url('assets/LogoIT.png'); ?>" alt="Logo IT" class="w-8 h-8 mr-2">
+                    <span class="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-white">SIMPAZ</span>
                 </a>
             </div>
 

@@ -225,7 +225,7 @@
         <!-- Logo dan Judul -->
         <div class="flex flex-col items-center mb-8 text-2xl font-bold text-white fade-in stagger-1">
             <div class=" border-indigo-400/30">
-                <img src="<?php echo base_url('assets/LogoIT.png'); ?>" alt="Logo IT" class="w-24 h-24">
+                <img src="<?php echo base_url('assets/LogoRS.png'); ?>" alt="Logo IT" class="w-34 h-24">
             </div>
             <br>
             <div class="text-center -mt-2">
@@ -328,7 +328,7 @@
                     <div class="text-center">
                         <p class="text-sm text-gray-400">
                             Belum punya akun? 
-                            <a href="#" class="font-semibold text-indigo-400 hover:text-indigo-300 transition-colors duration-200">Daftar di sini</a>
+                            <a href="<?php echo site_url('autentikasi/registrasi'); ?>" class="font-semibold text-indigo-400 hover:text-indigo-300 transition-colors duration-200">Daftar di sini</a>
                         </p>
                     </div>
                 </form>

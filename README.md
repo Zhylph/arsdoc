@@ -25,6 +25,7 @@ Sistem ini dirancang untuk mengelola pengarsipan dokumen dengan tiga level pengg
 - Menentukan requirement file upload untuk setiap template
 - Review dan approve/reject submission dari user
 - Tracking status dokumen
+- **File Pribadi User** - Melihat semua file pribadi yang diupload oleh user
 
 ### Fitur User
 - Dashboard personal
@@ -157,6 +158,7 @@ Sistem menggunakan Tailwind CSS dan Flowbite components. Untuk kustomisasi:
 3. Buat template dokumen dengan field yang diperlukan
 4. Review submission dari user
 5. Approve atau reject submission
+6. Melihat semua file pribadi yang diupload oleh user
 
 ### Untuk User:
 1. Login atau register akun baru
